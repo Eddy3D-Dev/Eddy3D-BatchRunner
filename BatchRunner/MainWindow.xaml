@@ -1,0 +1,116 @@
+<Window x:Class="BatchRunner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BatchRunner"
+        mc:Ignorable="d"
+        Title="BatchRunner"
+        Icon="pack://application:,,,/assets/logo.ico"
+        Height="650"
+        Width="1100"
+        MinHeight="520"
+        MinWidth="900"
+        Background="{StaticResource AppBackgroundBrush}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource SurfaceBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="12"
+                Margin="0,0,0,12">
+            <WrapPanel VerticalAlignment="Center">
+                <Button Content="Add .bat..." Width="110" Margin="0,0,8,0" Click="AddJobs_Click" />
+                <Button Content="Start queue" Width="110" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
+                <Button Content="Remove" Width="90" Margin="0,0,8,0" Command="{Binding RemoveJobCommand}" />
+                <Button Content="Cancel" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
+                <Button Content="Restart" Width="90" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" />
+                <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
+                          IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
+                <CheckBox Content="Show job window" Margin="0,0,16,0"
+                          IsChecked="{Binding Settings.ShowConsoleWindow}" />
+                <Border Background="{StaticResource HeaderBackgroundBrush}"
+                        BorderBrush="{StaticResource SurfaceBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="10,4">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Cores:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                        <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
+                        <TextBlock Text="{Binding TotalCores}" VerticalAlignment="Center" />
+                        <TextBlock Text="(free:" VerticalAlignment="Center" Margin="6,0,0,0" />
+                        <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
+                        <TextBlock Text=")" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource SurfaceBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                ClipToBounds="True">
+            <DataGrid x:Name="JobsGrid"
+                      ItemsSource="{Binding Jobs}"
+                      SelectedItem="{Binding SelectedJob}"
+                      AutoGenerateColumns="False"
+                      AlternationCount="2"
+                      BorderThickness="0"
+                      AllowDrop="True"
+                      PreviewMouseLeftButtonDown="JobsGrid_PreviewMouseLeftButtonDown"
+                      MouseMove="JobsGrid_MouseMove"
+                      Drop="JobsGrid_Drop"
+                      DragOver="JobsGrid_DragOver">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="180"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="60"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Added" Binding="{Binding AddedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Ended" Binding="{Binding EndedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat={}{0:hh\\:mm\\:ss}}" Width="90"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Exit" Binding="{Binding ExitCode}" Width="60"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="70"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTextColumn Header="Log" Binding="{Binding LogFileName}" Width="200"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                    <DataGridTemplateColumn Header="Actions" Width="160">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Button Content="Cancel" Margin="4,4"
+                                            Padding="12,2"
+                                            MinWidth="72"
+                                            Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Content="Restart" Margin="4,4"
+                                            Padding="12,2"
+                                            MinWidth="72"
+                                            Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Window>
