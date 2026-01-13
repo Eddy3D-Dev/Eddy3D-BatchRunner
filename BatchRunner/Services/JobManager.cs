@@ -31,12 +31,30 @@ public class JobManager : IDisposable
 
     public bool ShowConsoleWindow { get; set; } = true;
 
+    public bool IsQueueRunning { get; private set; }
+
     public int UsedCores => _jobs.Where(job => job.Status == JobStatus.Running).Sum(job => job.RequiredCores);
 
     public int AvailableCores => Math.Max(0, TotalCores - UsedCores);
 
+    public void StartQueue()
+    {
+        IsQueueRunning = true;
+        TryStartJobs();
+    }
+
+    public void PauseQueue()
+    {
+        IsQueueRunning = false;
+    }
+
     public void TryStartJobs()
     {
+        if (!IsQueueRunning)
+        {
+            return;
+        }
+
         if (_isScheduling)
         {
             return;

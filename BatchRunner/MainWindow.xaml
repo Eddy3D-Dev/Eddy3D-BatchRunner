@@ -45,7 +45,7 @@
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
                         <TextBlock Text="{Binding TotalCores}" VerticalAlignment="Center" />
-                        <TextBlock Text="(free:" VerticalAlignment="Center" Margin="6,0,0,0" />
+                        <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>

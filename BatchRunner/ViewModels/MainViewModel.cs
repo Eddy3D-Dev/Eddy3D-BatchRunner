@@ -54,7 +54,6 @@ public class MainViewModel : ObservableObject
 
         UpdateCoreCounts();
         SaveState();
-        _jobManager.TryStartJobs();
     }
 
     public ObservableCollection<BatchJob> Jobs { get; }
@@ -288,11 +287,12 @@ public class MainViewModel : ObservableObject
 
     private void StartQueue(object? parameter)
     {
-        _jobManager.TryStartJobs();
+        _jobManager.StartQueue();
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private bool CanStartQueue(object? parameter)
     {
-        return Jobs.Any(job => job.Status == JobStatus.Queued);
+        return !_jobManager.IsQueueRunning && Jobs.Any(job => job.Status == JobStatus.Queued);
     }
 }

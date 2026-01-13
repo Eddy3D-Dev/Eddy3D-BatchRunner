@@ -29,7 +29,14 @@ dotnet run --project .\BatchRunner\BatchRunner.csproj
 
 ## Publish single EXE
 ```powershell
-dotnet publish .\BatchRunner\BatchRunner.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true
+dotnet publish .\BatchRunner\BatchRunner.csproj -c Release
 ```
 
 The single EXE will be in `BatchRunner\bin\Release\net8.0-windows\win-x64\publish`.
+
+## Publish via script
+```powershell
+.\publish.bat
+```
+
+The publish output will be in `publish`.

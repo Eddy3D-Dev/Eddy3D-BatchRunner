@@ -23,6 +23,8 @@
         <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="{StaticResource HeaderBackgroundColor}" />
         <SolidColorBrush x:Key="RowAltBackgroundBrush" Color="{StaticResource RowAltBackgroundColor}" />
         <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{StaticResource HoverBackgroundColor}" />
+        <Thickness x:Key="GridColumnPadding">8,0,8,0</Thickness>
+        <Thickness x:Key="GridColumnTextMargin">8,0,8,0</Thickness>
 
         <Style TargetType="{x:Type Control}">
             <Setter Property="FontFamily" Value="Segoe UI" />
@@ -97,7 +99,9 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="{StaticResource GridColumnPadding}" />
         </Style>
 
         <Style x:Key="DataGridCellTextStyle" TargetType="{x:Type TextBlock}">
@@ -106,6 +110,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Left" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Margin" Value="{StaticResource GridColumnTextMargin}" />
         </Style>
 
         <Style TargetType="{x:Type DataGridRow}">
@@ -114,7 +119,7 @@
             <Setter Property="SnapsToDevicePixels" Value="True" />
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#E0F2F1" />
+                    <Setter Property="Background" Value="#D9ECFF" />
                     <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                 </Trigger>
             </Style.Triggers>
@@ -123,8 +128,14 @@
         <Style TargetType="{x:Type DataGridCell}">
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="BorderThickness" Value="0" />
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#D9ECFF" />
+                    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Application.Resources>
 </Application>
