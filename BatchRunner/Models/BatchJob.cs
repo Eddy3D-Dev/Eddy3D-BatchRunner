@@ -104,13 +104,29 @@ public class BatchJob : ObservableObject
     {
         get
         {
-            if (StartedAt is null || EndedAt is null)
+            if (StartedAt is null)
             {
                 return null;
             }
 
-            return EndedAt.Value - StartedAt.Value;
+            if (EndedAt is not null)
+            {
+                return EndedAt.Value - StartedAt.Value;
+            }
+            
+            // Should we return current duration if running?
+            if (Status == JobStatus.Running)
+            {
+                 return DateTimeOffset.Now - StartedAt.Value;
+            }
+
+            return null;
         }
+    }
+    
+    public void RefreshDuration()
+    {
+        OnPropertyChanged(nameof(Duration));
     }
 
     public string? LogFileName => string.IsNullOrWhiteSpace(LogPath) ? null : Path.GetFileName(LogPath);

@@ -17,7 +17,8 @@ public class JobManager : IDisposable
     private readonly HashSet<Guid> _cancelRequested = new();
     private readonly HashSet<Guid> _restartRequested = new();
     private readonly string _logRoot;
-    private bool _isScheduling;
+    private int _watchdogTicks = 0;
+    private readonly DispatcherTimer _monitorTimer;
 
     public JobManager(ObservableCollection<BatchFolder> folders, Dispatcher dispatcher, int totalCores, string logRoot)
     {
@@ -25,6 +26,81 @@ public class JobManager : IDisposable
         _dispatcher = dispatcher;
         TotalCores = totalCores;
         _logRoot = logRoot;
+
+        _monitorTimer = new DispatcherTimer(DispatcherPriority.Background, dispatcher)
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _monitorTimer.Tick += MonitorTimerOnTick;
+        _monitorTimer.Start();
+    }
+
+    private void MonitorTimerOnTick(object? sender, EventArgs e)
+    {
+        // 1. Update Duration for running jobs
+        foreach (var folder in _folders)
+        {
+            foreach (var job in folder.Jobs)
+            {
+                if (job.Status == JobStatus.Running)
+                {
+                    job.RefreshDuration();
+                }
+            }
+        }
+
+        // 2. Process Watchdog (every 5 seconds)
+        _watchdogTicks++;
+        if (_watchdogTicks >= 5)
+        {
+            _watchdogTicks = 0;
+            EnforceHighPriority();
+        }
+    }
+
+    private void EnforceHighPriority()
+    {
+        // Target specific OpenFOAM/CFD processes
+        var targetNames = new[] 
+        { 
+            "simpleFoam", 
+            "blockMesh", 
+            "snappyHexMesh", 
+            "decomposePar", 
+            "reconstructPar",
+            "mpiexec", // MS-MPI
+            "mpirun"   // OpenMPI
+        };
+
+        foreach (var name in targetNames)
+        {
+            try
+            {
+                var processes = Process.GetProcessesByName(name);
+                foreach (var p in processes)
+                {
+                    try
+                    {
+                        if (!p.HasExited && p.PriorityClass != ProcessPriorityClass.High)
+                        {
+                            p.PriorityClass = ProcessPriorityClass.High;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore access denied etc.
+                    }
+                    finally
+                    {
+                        p.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore general errors
+            }
+        }
     }
 
     public int TotalCores { get; }
@@ -496,5 +572,6 @@ public class JobManager : IDisposable
         {
             TryKillProcess(process);
         }
+        _monitorTimer.Stop();
     }
 }
