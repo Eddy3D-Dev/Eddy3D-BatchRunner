@@ -153,6 +153,44 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    public void AddBatchFiles(IEnumerable<string> paths)
+    {
+        foreach (var path in paths)
+        {
+            if (!File.Exists(path))
+            {
+                continue;
+            }
+
+            var folderName = Path.GetFileName(path); // Use file name as "folder" name for UI
+            var dirPath = Path.GetDirectoryName(path) ?? path;
+
+            var job = new BatchJob
+            {
+                Id = Guid.NewGuid(),
+                BatPath = path,
+                Name = Path.GetFileNameWithoutExtension(path),
+                RequiredCores = BatchFileParser.GetRequiredCores(path),
+                Status = JobStatus.Queued,
+                AddedAt = DateTimeOffset.Now
+            };
+
+            var jobs = new ObservableCollection<BatchJob> { job };
+
+            var folder = new BatchFolder
+            {
+                Id = Guid.NewGuid(),
+                Name = folderName,
+                Path = dirPath,
+                Jobs = jobs,
+                Status = JobStatus.Queued,
+                IsExpanded = true
+            };
+
+            Folders.Add(folder);
+        }
+    }
+
     private void NormalizeLoadedFolders()
     {
         foreach (var folder in Folders)

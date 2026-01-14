@@ -28,8 +28,10 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center">
-                <Button Content="Add Folder..." Width="110" Margin="0,0,8,0" Click="AddFolder_Click" />
-                <Button Content="Start queue" Width="110" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
+                <Button Content="Add Folder..." Width="100" Margin="0,0,8,0" Click="AddFolder_Click" />
+                <Button Content="Add .bat..." Width="80" Margin="0,0,16,0" Click="AddJobs_Click" />
+                
+                <Button Content="Start queue" Width="100" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
                 
                 <Button Content="Cancel Job" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
                 <Button Content="Restart Job" Width="90" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" />

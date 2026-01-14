@@ -36,6 +36,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private void AddJobs_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Batch files (*.bat)|*.bat|All files (*.*)|*.*",
+            Multiselect = true
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.AddBatchFiles(dialog.FileNames);
+        }
+    }
+
     private void FoldersList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _dragStart = e.GetPosition(null);

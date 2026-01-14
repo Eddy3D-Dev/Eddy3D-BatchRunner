@@ -44,6 +44,32 @@ public static class BatchFileParser
             }
         }
 
+        // If no explicit -np found (or found 1), try to find system/decomposeParDict
+        if (cores <= 1)
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(batPath);
+                if (dir is not null)
+                {
+                    var dictPath = Path.Combine(dir, "system", "decomposeParDict");
+                    if (File.Exists(dictPath))
+                    {
+                        var content = File.ReadAllText(dictPath);
+                        var match = Regex.Match(content, @"numberOfSubdomains\s+(\d+);");
+                        if (match.Success && int.TryParse(match.Groups[1].Value, out var dictCores))
+                        {
+                            cores = dictCores;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore errors reading dict
+            }
+        }
+
         return Math.Max(1, cores);
     }
 }
