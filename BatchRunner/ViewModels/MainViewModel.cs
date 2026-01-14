@@ -102,12 +102,10 @@ public class MainViewModel : ObservableObject
 
     public void AddFolders(IEnumerable<string> paths)
     {
-        var completedFolders = new List<string>();
         var foldersToAdd = new List<string>();
 
         foreach (var path in paths)
         {
-            // Path could be a file or folder. If file, take directory.
             var folderPath = File.Exists(path) ? Path.GetDirectoryName(path) : path;
             
             if (folderPath == null || !Directory.Exists(folderPath))
@@ -121,29 +119,35 @@ public class MainViewModel : ObservableObject
                 continue;
             }
 
-            if (CheckIfFolderIsCompleted(folderPath))
+            var summaryLog = Path.Combine(folderPath, "batch_runner_summary.log");
+            var saveResultsLog = Path.Combine(folderPath, "save_results.log");
+
+            // 1. Try to load from summary log (Rich data)
+            if (File.Exists(summaryLog))
             {
-                completedFolders.Add(folderPath);
+                var folder = TryCreateCompletedFolderFromLog(folderPath, summaryLog);
+                if (folder != null)
+                {
+                    Folders.Add(folder);
+                    continue;
+                }
             }
-            foldersToAdd.Add(folderPath); // We collect valid paths first, then filtering or warning
-        }
 
-        if (completedFolders.Any())
-        {
-            var message = "The following folders are already completed (found 'batch_runner_summary.log' or 'save_results.log') and will be skipped:\n\n" + 
-                          string.Join("\n", completedFolders.Select(p => new DirectoryInfo(p).Name));
+            // 2. Try to load from save_results.log (Fallback: Mark all as completed)
+            if (File.Exists(saveResultsLog))
+            {
+                var folder = CreateCompletedFolderGeneric(folderPath);
+                Folders.Add(folder);
+                continue;
+            }
 
-            MessageBox.Show(message, "Completed Folders Skipped", MessageBoxButton.OK, MessageBoxImage.Information);            
-            
-            // Remove completed folders from the add list
-            foldersToAdd.RemoveAll(f => completedFolders.Contains(f));
+            // 3. Normal load (Queued)
+            foldersToAdd.Add(folderPath); 
         }
 
         foreach (var folderPath in foldersToAdd)
         {
             var folderName = new DirectoryInfo(folderPath).Name;
-            
-            // Check for specific batch files in order
             var batchFiles = new[]
             {
                 "run_mesh.bat",
@@ -164,7 +168,7 @@ public class MainViewModel : ObservableObject
                     {
                         Id = Guid.NewGuid(),
                         BatPath = fullPath,
-                        Name = batchFile, // Or Path.GetFileNameWithoutExtension(batchFile)
+                        Name = batchFile, 
                         RequiredCores = BatchFileParser.GetRequiredCores(fullPath),
                         Status = JobStatus.Queued,
                         AddedAt = DateTimeOffset.Now
@@ -187,6 +191,144 @@ public class MainViewModel : ObservableObject
                 Folders.Add(folder);
             }
         }
+    }
+
+    private BatchFolder? TryCreateCompletedFolderFromLog(string folderPath, string logPath)
+    {
+        try
+        {
+            var lines = File.ReadAllLines(logPath);
+            var jobs = new ObservableCollection<BatchJob>();
+            var folderName = new DirectoryInfo(folderPath).Name;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                // Look for job header: [Completed] jobname.bat
+                if (line.StartsWith("[") && line.Contains("]"))
+                {
+                    var closingBracketIndex = line.IndexOf(']');
+                    var statusStr = line.Substring(1, closingBracketIndex - 1);
+                    var name = line.Substring(closingBracketIndex + 1).Trim();
+
+                    if (!Enum.TryParse<JobStatus>(statusStr, out var status))
+                    {
+                        status = JobStatus.Completed;
+                    }
+
+                    // Look ahead for details: "    Time: 00:00:08 | Exit: 0"
+                    var duration = TimeSpan.Zero;
+                    int exitCode = 0;
+                    
+                    if (i + 1 < lines.Length)
+                    {
+                        var detailLine = lines[i+1];
+                        if (detailLine.Contains("Time:") && detailLine.Contains("Exit:"))
+                        {
+                            var parts = detailLine.Split('|');
+                            foreach (var p in parts)
+                            {
+                                if (p.Trim().StartsWith("Time:"))
+                                {
+                                    var timeStr = p.Trim().Substring(5).Trim();
+                                    TimeSpan.TryParse(timeStr, out duration);
+                                }
+                                if (p.Trim().StartsWith("Exit:"))
+                                {
+                                    var exitStr = p.Trim().Substring(5).Trim();
+                                    int.TryParse(exitStr, out exitCode);
+                                }
+                            }
+                        }
+                    }
+
+                    // Reconstruct job
+                    // We don't have exact start/end times in the summary log (only duration).
+                    // We'll fake them relative to Now so Duration property works.
+                    var endedAt = DateTimeOffset.Now;
+                    var startedAt = endedAt.Subtract(duration);
+                    
+                    var fullPath = Path.Combine(folderPath, name);
+
+                    jobs.Add(new BatchJob
+                    {
+                        Id = Guid.NewGuid(),
+                        BatPath = fullPath,
+                        Name = name,
+                        Status = status,
+                        AddedAt = startedAt,
+                        StartedAt = startedAt,
+                        EndedAt = endedAt,
+                        ExitCode = exitCode,
+                        RequiredCores = File.Exists(fullPath) ? BatchFileParser.GetRequiredCores(fullPath) : 1
+                        // LogPath is tricky, we can try to guess it or leave empty
+                    });
+                }
+            }
+
+            if (jobs.Any())
+            {
+                return new BatchFolder
+                {
+                    Id = Guid.NewGuid(),
+                    Name = folderName,
+                    Path = folderPath,
+                    Jobs = jobs,
+                    Status = JobStatus.Completed,
+                    IsExpanded = false // Collapse completed by default? User opened it so maybe Expanded? User said "open a completed folder". Let's expand.
+                };
+            }
+        }
+        catch
+        {
+            // Parse error
+        }
+        return null;
+    }
+
+    private BatchFolder CreateCompletedFolderGeneric(string folderPath)
+    {
+        var folderName = new DirectoryInfo(folderPath).Name;
+        var batchFiles = new[]
+        {
+            "run_mesh.bat",
+            "symbolic_link_creator.bat",
+            "run_sim_all.bat",
+            "run_divU_all.bat",
+            "save_results_to_dataset.bat"
+        };
+
+        var jobs = new ObservableCollection<BatchJob>();
+            
+        foreach (var batchFile in batchFiles)
+        {
+            var fullPath = Path.Combine(folderPath, batchFile);
+            if (File.Exists(fullPath))
+            {
+                jobs.Add(new BatchJob
+                {
+                    Id = Guid.NewGuid(),
+                    BatPath = fullPath,
+                    Name = batchFile, 
+                    RequiredCores = BatchFileParser.GetRequiredCores(fullPath),
+                    Status = JobStatus.Completed,
+                    AddedAt = DateTimeOffset.Now,
+                    StartedAt = DateTimeOffset.Now,
+                    EndedAt = DateTimeOffset.Now,
+                    ExitCode = 0
+                });
+            }
+        }
+
+        return new BatchFolder
+        {
+            Id = Guid.NewGuid(),
+            Name = folderName,
+            Path = folderPath,
+            Jobs = jobs,
+            Status = JobStatus.Completed,
+            IsExpanded = true
+        };
     }
 
     private bool CheckIfFolderIsCompleted(string folderPath)
