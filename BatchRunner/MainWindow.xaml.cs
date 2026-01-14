@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,13 +13,27 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private Point _dragStart;
-    private BatchJob? _draggedJob;
+    private BatchFolder? _draggedFolder;
 
     public MainWindow()
     {
         InitializeComponent();
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
+    }
+
+    private void AddFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Multiselect = true,
+            Title = "Select Folders containing batch files"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.AddFolders(dialog.FolderNames);
+        }
     }
 
     private void AddJobs_Click(object sender, RoutedEventArgs e)
@@ -31,19 +46,19 @@ public partial class MainWindow : Window
 
         if (dialog.ShowDialog() == true)
         {
-            _viewModel.AddJobs(dialog.FileNames);
+            _viewModel.AddBatchFiles(dialog.FileNames);
         }
     }
 
-    private void JobsGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void FoldersList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _dragStart = e.GetPosition(null);
-        _draggedJob = GetJobFromEvent(e.OriginalSource);
+        _draggedFolder = GetFolderFromEvent(e.OriginalSource);
     }
 
-    private void JobsGrid_MouseMove(object sender, MouseEventArgs e)
+    private void FoldersList_MouseMove(object sender, MouseEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed || _draggedJob is null)
+        if (e.LeftButton != MouseButtonState.Pressed || _draggedFolder is null)
         {
             return;
         }
@@ -58,17 +73,17 @@ public partial class MainWindow : Window
             return;
         }
 
-        var data = new DataObject(typeof(BatchJob), _draggedJob);
-        DragDrop.DoDragDrop(JobsGrid, data, DragDropEffects.Move);
+        var data = new DataObject(typeof(BatchFolder), _draggedFolder);
+        DragDrop.DoDragDrop(FoldersListItemsControl, data, DragDropEffects.Move);
     }
 
-    private void JobsGrid_DragOver(object sender, DragEventArgs e)
+    private void FoldersList_DragOver(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             e.Effects = DragDropEffects.Copy;
         }
-        else if (e.Data.GetDataPresent(typeof(BatchJob)))
+        else if (e.Data.GetDataPresent(typeof(BatchFolder)))
         {
             e.Effects = DragDropEffects.Move;
         }
@@ -80,49 +95,56 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
-    private void JobsGrid_Drop(object sender, DragEventArgs e)
+    private void FoldersList_Drop(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             var files = (string[])(e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>());
-            var batFiles = files.Where(file => file.EndsWith(".bat", StringComparison.OrdinalIgnoreCase));
-            _viewModel.AddJobs(batFiles);
+            // AddFolders handles both files and folders (if file, it takes dirname)
+            _viewModel.AddFolders(files);
             return;
         }
 
-        if (e.Data.GetDataPresent(typeof(BatchJob)))
+        if (e.Data.GetDataPresent(typeof(BatchFolder)))
         {
-            if (e.Data.GetData(typeof(BatchJob)) is not BatchJob droppedJob)
+            if (e.Data.GetData(typeof(BatchFolder)) is not BatchFolder droppedFolder)
             {
                 return;
             }
 
-            var targetJob = GetJobFromEvent(e.OriginalSource);
-            var fromIndex = _viewModel.Jobs.IndexOf(droppedJob);
-            var toIndex = targetJob is null ? _viewModel.Jobs.Count - 1 : _viewModel.Jobs.IndexOf(targetJob);
+            var targetFolder = GetFolderFromEvent(e.OriginalSource);
+            var fromIndex = _viewModel.Folders.IndexOf(droppedFolder);
+            var toIndex = targetFolder is null ? _viewModel.Folders.Count - 1 : _viewModel.Folders.IndexOf(targetFolder);
 
-            _viewModel.MoveJob(fromIndex, toIndex);
+            if (fromIndex != -1 && toIndex != -1)
+            {
+                 _viewModel.Folders.Move(fromIndex, toIndex);
+            }
         }
     }
 
-    private static BatchJob? GetJobFromEvent(object? source)
+    private static BatchFolder? GetFolderFromEvent(object? source)
     {
-        var row = FindAncestor<DataGridRow>(source as DependencyObject);
-        return row?.Item as BatchJob;
-    }
-
-    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
-    {
-        while (current is not null)
+        // Source might be inside the Expander header or content.
+        // We want the FrameworkElement that has DataContext as BatchFolder.
+        // But likely we are using ItemsControl, so we look for ContentPresenter.
+        
+        var element = source as FrameworkElement;
+        if (element?.DataContext is BatchFolder folder)
         {
-            if (current is T match)
+            return folder;
+        }
+        
+        // Walk up to find something with BatchFolder context
+        var current = source as DependencyObject;
+        while (current != null)
+        {
+            if (current is FrameworkElement fe && fe.DataContext is BatchFolder f)
             {
-                return match;
+                return f;
             }
-
             current = VisualTreeHelper.GetParent(current);
         }
-
         return null;
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Threading;
@@ -9,7 +11,7 @@ namespace BatchRunner.Services;
 public class JobManager : IDisposable
 {
     private const int AutoRetryLimit = 1;
-    private readonly ObservableCollection<BatchJob> _jobs;
+    private readonly ObservableCollection<BatchFolder> _folders;
     private readonly Dispatcher _dispatcher;
     private readonly Dictionary<Guid, Process> _running = new();
     private readonly HashSet<Guid> _cancelRequested = new();
@@ -17,9 +19,9 @@ public class JobManager : IDisposable
     private readonly string _logRoot;
     private bool _isScheduling;
 
-    public JobManager(ObservableCollection<BatchJob> jobs, Dispatcher dispatcher, int totalCores, string logRoot)
+    public JobManager(ObservableCollection<BatchFolder> folders, Dispatcher dispatcher, int totalCores, string logRoot)
     {
-        _jobs = jobs;
+        _folders = folders;
         _dispatcher = dispatcher;
         TotalCores = totalCores;
         _logRoot = logRoot;
@@ -33,7 +35,7 @@ public class JobManager : IDisposable
 
     public bool IsQueueRunning { get; private set; }
 
-    public int UsedCores => _jobs.Where(job => job.Status == JobStatus.Running).Sum(job => job.RequiredCores);
+    public int UsedCores => _folders.SelectMany(f => f.Jobs).Where(job => job.Status == JobStatus.Running).Sum(job => job.RequiredCores);
 
     public int AvailableCores => Math.Max(0, TotalCores - UsedCores);
 
@@ -63,20 +65,73 @@ public class JobManager : IDisposable
         _isScheduling = true;
         try
         {
-            while (true)
+            // Sequential logic:
+            // 1. Find the first folder that is not fully completed.
+            // 2. In that folder, find the first job that is Queued.
+            // 3. Ensure no other job is running in that folder (strict sequential per folder).
+            // 4. Ensure we are not running a job from a previous folder (strict sequential folders).
+
+            // Actually, simply: iterate folders in order.
+            foreach (var folder in _folders)
             {
-                var next = _jobs.FirstOrDefault(job => job.Status == JobStatus.Queued);
-                if (next is null)
+                // If folder has failed jobs and we are not retrying, or just generally if it's "blocked", maybe we stop?
+                // For now, let's assume we proceed unless specific stop condition.
+                // But user asked: "after completing one folder, it should go with the next one".
+                
+                // Check if this folder has any running jobs. If so, we can't start another one in this folder (sequential).
+                if (folder.Jobs.Any(j => j.Status == JobStatus.Running))
                 {
-                    break;
+                    // A job is running in this folder. We wait.
+                    // And since we do folders sequentially, we don't look at next folders.
+                    return; 
                 }
 
-                if (next.RequiredCores > AvailableCores)
+                // Check if this folder has incomplete jobs.
+                var nextJob = folder.Jobs.FirstOrDefault(j => j.Status == JobStatus.Queued);
+                
+                if (nextJob != null)
                 {
-                    break;
+                    // Found a job to run in this folder.
+                    // Check if previous jobs in this folder are all completed (or skipped/failed if that allows proceeding?)
+                    // The requirement says "wait for the former step to be completed". 
+                    // So we must ensure all prior jobs are Completed.
+                    
+                    var index = folder.Jobs.IndexOf(nextJob);
+                    var previousJobs = folder.Jobs.Take(index);
+                    if (previousJobs.Any(j => j.Status != JobStatus.Completed))
+                    {
+                        // Previous jobs not completed (maybe Failed or Cancelled). 
+                        // If Failed/Cancelled, do we stop? 
+                        // Usually in strict sequence, failure stops the chain.
+                        // Let's assume we stop.
+                        return;
+                    }
+
+                    // Check resources
+                    if (nextJob.RequiredCores > AvailableCores)
+                    {
+                        // Not enough cores. We wait. 
+                        // (Since we are strictly sequential, we don't try to skip to next folder)
+                        return; 
+                    }
+
+                    StartJob(nextJob, folder);
+                    return; // Started a job, exit.
                 }
 
-                StartJob(next);
+                // If no queued jobs, maybe the folder is done?
+                // Check if any job failed in this folder? 
+                if (folder.Jobs.Any(j => j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled))
+                {
+                    // Folder failed. Do we proceed to next folder? 
+                    // User said "after completing one folder". Implies success. 
+                    // But if it fails, maybe we should stop everything?
+                    // Let's be safe: if a folder failed, we stop the queue.
+                    IsQueueRunning = false; 
+                    return;
+                }
+                
+                // If all jobs completed in this folder, we loop to the next folder.
             }
         }
         finally
@@ -113,22 +168,30 @@ public class JobManager : IDisposable
 
         ResetJob(job);
         job.Status = JobStatus.Queued;
+        
+        // Also reset subsequent jobs in the same folder?
+        // If we restart a job in the middle, we probably want to re-run subsequent ones too if they were finished?
+        // But for now, let's just reset this one. User can manually restart others if needed.
+        
         TryStartJobs();
     }
 
-    private void StartJob(BatchJob job)
+    private void StartJob(BatchJob job, BatchFolder folder)
     {
         if (job.Status != JobStatus.Queued)
         {
             return;
         }
 
-        var logPath = CreateLogPath(job);
+        var logPath = CreateLogPath(job, folder);
         job.Status = JobStatus.Running;
         job.StartedAt = DateTimeOffset.Now;
         job.EndedAt = null;
         job.ExitCode = null;
         job.LogPath = logPath;
+        
+        // Update folder status? 
+        folder.Status = JobStatus.Running;
 
         WriteLogHeader(logPath, job);
 
@@ -153,7 +216,7 @@ public class JobManager : IDisposable
             _ = Task.Run(async () =>
             {
                 await WaitForDescendantsToExitAsync(process.Id);
-                _dispatcher.Invoke(() => HandleProcessExit(job, process));
+                _dispatcher.Invoke(() => HandleProcessExit(job, folder, process));
             });
         };
 
@@ -166,6 +229,7 @@ public class JobManager : IDisposable
         {
             AppendLogLine(logPath, $"Failed to start process: {ex.Message}");
             job.Status = JobStatus.Failed;
+            folder.Status = JobStatus.Failed;
             job.EndedAt = DateTimeOffset.Now;
             TryStartJobs();
         }
@@ -185,7 +249,7 @@ public class JobManager : IDisposable
         }
     }
 
-    private void HandleProcessExit(BatchJob job, Process process)
+    private void HandleProcessExit(BatchJob job, BatchFolder folder, Process process)
     {
         var exitCode = SafeGetExitCode(process);
         var wasCancelled = _cancelRequested.Remove(job.Id);
@@ -208,6 +272,8 @@ public class JobManager : IDisposable
         if (wasCancelled)
         {
             job.Status = JobStatus.Cancelled;
+            // Folder status? maybe Cancelled?
+            folder.Status = JobStatus.Cancelled;
             AppendLogFooter(job, "Cancelled");
             TryStartJobs();
             return;
@@ -217,11 +283,19 @@ public class JobManager : IDisposable
         {
             job.Status = JobStatus.Completed;
             AppendLogFooter(job, "Completed");
+            
+            // Check if folder is completed
+            if (folder.Jobs.All(j => j.Status == JobStatus.Completed))
+            {
+                folder.Status = JobStatus.Completed;
+            }
+            
             TryStartJobs();
             return;
         }
 
         job.Status = JobStatus.Failed;
+        folder.Status = JobStatus.Failed;
 
         if (AutoRetryFailedJobs && job.RetryCount < AutoRetryLimit)
         {
@@ -229,11 +303,13 @@ public class JobManager : IDisposable
             AppendLogFooter(job, "Failed (auto retry)");
             ResetJob(job);
             job.Status = JobStatus.Queued;
+            folder.Status = JobStatus.Running; // Back to running
             TryStartJobs();
             return;
         }
 
         AppendLogFooter(job, "Failed");
+        // Don't auto-stop queue here, TryStartJobs will handle the stop logic if it sees a failed job.
         TryStartJobs();
     }
 
@@ -249,11 +325,11 @@ public class JobManager : IDisposable
         }
     }
 
-    private string CreateLogPath(BatchJob job)
+    private string CreateLogPath(BatchJob job, BatchFolder folder)
     {
         Directory.CreateDirectory(_logRoot);
         var stamp = DateTimeOffset.Now.ToString("yyyyMMdd_HHmmss");
-        var fileName = $"{stamp}_{SanitizeFileName(job.Name)}_{job.Id:N}.log";
+        var fileName = $"{stamp}_{SanitizeFileName(folder.Name)}_{SanitizeFileName(job.Name)}_{job.Id:N}.log";
         return Path.Combine(_logRoot, fileName);
     }
 
