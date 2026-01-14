@@ -223,6 +223,14 @@ public class JobManager : IDisposable
         try
         {
             process.Start();
+            try
+            {
+                process.PriorityClass = ProcessPriorityClass.High;
+            }
+            catch
+            {
+                // Ignore if unable to set priority (e.g. permissions)
+            }
             _running[job.Id] = process;
         }
         catch (Exception ex)
