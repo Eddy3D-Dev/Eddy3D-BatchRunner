@@ -14,6 +14,7 @@ public class MainViewModel : ObservableObject
     private readonly StateStore _stateStore;
     private readonly JobManager _jobManager;
     private readonly Dispatcher _dispatcher;
+    private BatchFolder? _selectedFolder;
     private BatchJob? _selectedJob;
 
     public MainViewModel()
@@ -29,11 +30,11 @@ public class MainViewModel : ObservableObject
             Settings.ShowConsoleWindow = state.Settings.ShowConsoleWindow;
         }
 
-        Jobs = new ObservableCollection<BatchJob>(state.Jobs ?? new List<BatchJob>());
-        NormalizeLoadedJobs();
+        Folders = new ObservableCollection<BatchFolder>(state.Folders ?? new List<BatchFolder>());
+        NormalizeLoadedFolders();
 
         var logRoot = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-        _jobManager = new JobManager(Jobs, _dispatcher, CpuInfo.GetPhysicalCoreCount(), logRoot)
+        _jobManager = new JobManager(Folders, _dispatcher, CpuInfo.GetPhysicalCoreCount(), logRoot)
         {
             AutoRetryFailedJobs = Settings.AutoRetryFailedJobs,
             ShowConsoleWindow = Settings.ShowConsoleWindow
@@ -41,13 +42,13 @@ public class MainViewModel : ObservableObject
 
         Settings.PropertyChanged += SettingsOnPropertyChanged;
 
-        Jobs.CollectionChanged += JobsOnCollectionChanged;
-        foreach (var job in Jobs)
+        Folders.CollectionChanged += FoldersOnCollectionChanged;
+        foreach (var folder in Folders)
         {
-            HookJob(job);
+            HookFolder(folder);
         }
 
-        RemoveJobCommand = new RelayCommand(RemoveJob, CanRemoveJob);
+        RemoveFolderCommand = new RelayCommand(RemoveFolder, CanRemoveFolder);
         CancelJobCommand = new RelayCommand(CancelJob, CanCancelJob);
         RestartJobCommand = new RelayCommand(RestartJob, CanRestartJob);
         StartQueueCommand = new RelayCommand(StartQueue, CanStartQueue);
@@ -56,9 +57,15 @@ public class MainViewModel : ObservableObject
         SaveState();
     }
 
-    public ObservableCollection<BatchJob> Jobs { get; }
+    public ObservableCollection<BatchFolder> Folders { get; }
 
     public AppSettings Settings { get; }
+    
+    public BatchFolder? SelectedFolder
+    {
+        get => _selectedFolder;
+        set => SetProperty(ref _selectedFolder, value);
+    }
 
     public BatchJob? SelectedJob
     {
@@ -78,7 +85,7 @@ public class MainViewModel : ObservableObject
 
     public int AvailableCores => _jobManager.AvailableCores;
 
-    public ICommand RemoveJobCommand { get; }
+    public ICommand RemoveFolderCommand { get; }
 
     public ICommand CancelJobCommand { get; }
 
@@ -86,86 +93,163 @@ public class MainViewModel : ObservableObject
 
     public ICommand StartQueueCommand { get; }
 
-    public void AddJobs(IEnumerable<string> paths)
+    public void AddFolders(IEnumerable<string> paths)
     {
         foreach (var path in paths)
         {
-            if (!File.Exists(path))
+            // Path could be a file or folder. If file, take directory.
+            var folderPath = File.Exists(path) ? Path.GetDirectoryName(path) : path;
+            
+            if (folderPath == null || !Directory.Exists(folderPath))
             {
                 continue;
             }
 
-            var job = new BatchJob
+            var folderName = new DirectoryInfo(folderPath).Name;
+            
+            // Check for specific batch files in order
+            var batchFiles = new[]
             {
-                Id = Guid.NewGuid(),
-                BatPath = path,
-                Name = Path.GetFileNameWithoutExtension(path),
-                RequiredCores = BatchFileParser.GetRequiredCores(path),
-                Status = JobStatus.Queued,
-                AddedAt = DateTimeOffset.Now
+                "run_mesh.bat",
+                "symbolic_link_creator.bat",
+                "run_sim_all.bat",
+                "run_divU_all.bat",
+                "save_results_to_dataset.bat"
             };
 
-            Jobs.Add(job);
+            var jobs = new ObservableCollection<BatchJob>();
+            
+            foreach (var batchFile in batchFiles)
+            {
+                var fullPath = Path.Combine(folderPath, batchFile);
+                if (File.Exists(fullPath))
+                {
+                    jobs.Add(new BatchJob
+                    {
+                        Id = Guid.NewGuid(),
+                        BatPath = fullPath,
+                        Name = batchFile, // Or Path.GetFileNameWithoutExtension(batchFile)
+                        RequiredCores = BatchFileParser.GetRequiredCores(fullPath),
+                        Status = JobStatus.Queued,
+                        AddedAt = DateTimeOffset.Now
+                    });
+                }
+            }
+
+            if (jobs.Any())
+            {
+                var folder = new BatchFolder
+                {
+                    Id = Guid.NewGuid(),
+                    Name = folderName,
+                    Path = folderPath,
+                    Jobs = jobs,
+                    Status = JobStatus.Queued,
+                    IsExpanded = true
+                };
+                
+                Folders.Add(folder);
+            }
         }
     }
 
-    public void MoveJob(int fromIndex, int toIndex)
+    private void NormalizeLoadedFolders()
     {
-        if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0)
+        foreach (var folder in Folders)
         {
-            return;
-        }
-
-        if (fromIndex >= Jobs.Count || toIndex >= Jobs.Count)
-        {
-            return;
-        }
-
-        Jobs.Move(fromIndex, toIndex);
-    }
-
-    private void NormalizeLoadedJobs()
-    {
-        foreach (var job in Jobs)
-        {
-            if (job.Id == Guid.Empty)
+            if (folder.Id == Guid.Empty) folder.Id = Guid.NewGuid();
+            
+            foreach (var job in folder.Jobs)
             {
-                job.Id = Guid.NewGuid();
-            }
+                if (job.Id == Guid.Empty)
+                {
+                    job.Id = Guid.NewGuid();
+                }
 
-            if (string.IsNullOrWhiteSpace(job.Name))
-            {
-                job.Name = Path.GetFileNameWithoutExtension(job.BatPath);
-            }
+                if (string.IsNullOrWhiteSpace(job.Name))
+                {
+                    job.Name = Path.GetFileName(job.BatPath);
+                }
 
-            if (File.Exists(job.BatPath))
-            {
-                job.RequiredCores = BatchFileParser.GetRequiredCores(job.BatPath);
-            }
-            else if (job.RequiredCores < 1)
-            {
-                job.RequiredCores = 1;
-            }
+                if (File.Exists(job.BatPath))
+                {
+                    job.RequiredCores = BatchFileParser.GetRequiredCores(job.BatPath);
+                }
+                else if (job.RequiredCores < 1)
+                {
+                    job.RequiredCores = 1;
+                }
 
-            if (job.AddedAt == default)
-            {
-                job.AddedAt = DateTimeOffset.Now;
-            }
+                if (job.AddedAt == default)
+                {
+                    job.AddedAt = DateTimeOffset.Now;
+                }
 
-            if (job.Status == JobStatus.Running)
-            {
-                job.Status = JobStatus.Queued;
-                job.StartedAt = null;
-                job.EndedAt = null;
-                job.ExitCode = null;
-                job.LogPath = null;
+                if (job.Status == JobStatus.Running)
+                {
+                    job.Status = JobStatus.Queued;
+                    job.StartedAt = null;
+                    job.EndedAt = null;
+                    job.ExitCode = null;
+                    job.LogPath = null;
+                    folder.Status = JobStatus.Queued; // Reset folder too
+                }
             }
         }
     }
 
-    private void JobsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void FoldersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.NewItems is not null)
+        {
+            foreach (BatchFolder folder in e.NewItems)
+            {
+                HookFolder(folder);
+            }
+        }
+
+        if (e.OldItems is not null)
+        {
+            foreach (BatchFolder folder in e.OldItems)
+            {
+                UnhookFolder(folder);
+            }
+        }
+
+        UpdateCoreCounts();
+        SaveState();
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void HookFolder(BatchFolder folder)
+    {
+        folder.PropertyChanged += FolderOnPropertyChanged;
+        folder.Jobs.CollectionChanged += JobsOnCollectionChanged;
+        foreach(var job in folder.Jobs)
+        {
+            HookJob(job);
+        }
+    }
+
+    private void UnhookFolder(BatchFolder folder)
+    {
+        folder.PropertyChanged -= FolderOnPropertyChanged;
+        folder.Jobs.CollectionChanged -= JobsOnCollectionChanged;
+        foreach (var job in folder.Jobs)
+        {
+            UnhookJob(job);
+        }
+    }
+
+    private void FolderOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // Folder property changed
+        SaveState();
+    }
+    
+    private void JobsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+         if (e.NewItems is not null)
         {
             foreach (BatchJob job in e.NewItems)
             {
@@ -180,7 +264,6 @@ public class MainViewModel : ObservableObject
                 UnhookJob(job);
             }
         }
-
         UpdateCoreCounts();
         SaveState();
         CommandManager.InvalidateRequerySuggested();
@@ -220,7 +303,7 @@ public class MainViewModel : ObservableObject
     {
         var snapshot = new RunnerState
         {
-            Jobs = Jobs.ToList(),
+            Folders = Folders.ToList(),
             Settings = new AppSettings
             {
                 AutoRetryFailedJobs = Settings.AutoRetryFailedJobs,
@@ -231,30 +314,49 @@ public class MainViewModel : ObservableObject
         _stateStore.Save(snapshot);
     }
 
-    private void RemoveJob(object? parameter)
+    private void RemoveFolder(object? parameter)
     {
-        var job = parameter as BatchJob ?? SelectedJob;
-        if (job is null)
+        var folder = parameter as BatchFolder ?? SelectedFolder;
+        
+        // If parameter is a job? No, RemoveFolder removes folders.
+        // What if user wants to remove a job?
+        // Let's assume user removes entire folder.
+        
+        if (folder is null)
         {
-            return;
+             // Check if SelectedJob is set, if so find its folder?
+             // For now, let's keep it simple: Select a folder to remove it.
+             return;
         }
 
-        if (job.Status == JobStatus.Running)
+        // Cancel running jobs in this folder
+        foreach(var job in folder.Jobs)
         {
-            _jobManager.CancelJob(job);
+            if (job.Status == JobStatus.Running)
+            {
+                _jobManager.CancelJob(job);
+            }
         }
 
-        Jobs.Remove(job);
+        Folders.Remove(folder);
     }
 
-    private bool CanRemoveJob(object? parameter)
+    private bool CanRemoveFolder(object? parameter)
     {
-        return parameter is BatchJob || SelectedJob is not null;
+        return parameter is BatchFolder || SelectedFolder is not null;
     }
 
     private void CancelJob(object? parameter)
     {
+        // Parameter might be a Job (from button in row) or null (context menu/global button)
         var job = parameter as BatchJob ?? SelectedJob;
+        
+        if (job is null && SelectedFolder != null)
+        {
+             // Cancel all jobs in folder?
+             // Let's focus on cancelling specific job or selected job.
+        }
+
         if (job is null)
         {
             return;
@@ -272,6 +374,19 @@ public class MainViewModel : ObservableObject
     private void RestartJob(object? parameter)
     {
         var job = parameter as BatchJob ?? SelectedJob;
+        
+        if (job is null && SelectedFolder != null)
+        {
+             // Restart folder?
+             // Logic for folder restart: reset all jobs in folder.
+             var folder = SelectedFolder;
+             foreach(var j in folder.Jobs)
+             {
+                 _jobManager.RestartJob(j); 
+             }
+             return;
+        }
+
         if (job is null)
         {
             return;
@@ -282,7 +397,7 @@ public class MainViewModel : ObservableObject
 
     private bool CanRestartJob(object? parameter)
     {
-        return parameter is BatchJob || SelectedJob is not null;
+        return parameter is BatchJob || SelectedJob is not null || SelectedFolder is not null;
     }
 
     private void StartQueue(object? parameter)
@@ -293,6 +408,7 @@ public class MainViewModel : ObservableObject
 
     private bool CanStartQueue(object? parameter)
     {
-        return !_jobManager.IsQueueRunning && Jobs.Any(job => job.Status == JobStatus.Queued);
+        // Check if any folder has queued jobs
+        return !_jobManager.IsQueueRunning && Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Queued || j.Status == JobStatus.Running));
     }
 }
