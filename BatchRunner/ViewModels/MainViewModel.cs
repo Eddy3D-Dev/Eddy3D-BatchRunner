@@ -216,14 +216,40 @@ public class MainViewModel : ObservableObject
                         status = JobStatus.Completed;
                     }
 
-                    // Look ahead for details: "    Time: 00:00:08 | Exit: 0"
+                    // Look ahead for details
                     var duration = TimeSpan.Zero;
                     int exitCode = 0;
+                    DateTimeOffset? startTs = null;
+                    DateTimeOffset? endTs = null;
                     
-                    if (i + 1 < lines.Length)
+                    // Possible next lines:
+                    // 1. "    Start: ... | End: ..." (New format)
+                    // 2. "    Time: ... | Exit: ..." (Both formats)
+                    
+                    int offset = 1;
+                    while (i + offset < lines.Length)
                     {
-                        var detailLine = lines[i+1];
-                        if (detailLine.Contains("Time:") && detailLine.Contains("Exit:"))
+                        var detailLine = lines[i + offset];
+                        if (string.IsNullOrWhiteSpace(detailLine)) break; // End of block
+
+                        if (detailLine.Contains("Start:") && detailLine.Contains("End:"))
+                        {
+                            var parts = detailLine.Split('|');
+                            foreach (var p in parts)
+                            {
+                                if (p.Trim().StartsWith("Start:"))
+                                {
+                                    var s = p.Trim().Substring(6).Trim();
+                                    if (DateTimeOffset.TryParse(s, out var dt)) startTs = dt;
+                                }
+                                if (p.Trim().StartsWith("End:"))
+                                {
+                                    var e = p.Trim().Substring(4).Trim();
+                                    if (DateTimeOffset.TryParse(e, out var dt)) endTs = dt;
+                                }
+                            }
+                        }
+                        else if (detailLine.Contains("Time:") && detailLine.Contains("Exit:"))
                         {
                             var parts = detailLine.Split('|');
                             foreach (var p in parts)
@@ -240,13 +266,12 @@ public class MainViewModel : ObservableObject
                                 }
                             }
                         }
+                        offset++;
                     }
 
                     // Reconstruct job
-                    // We don't have exact start/end times in the summary log (only duration).
-                    // We'll fake them relative to Now so Duration property works.
-                    var endedAt = DateTimeOffset.Now;
-                    var startedAt = endedAt.Subtract(duration);
+                    var endedAt = endTs ?? DateTimeOffset.Now;
+                    var startedAt = startTs ?? endedAt.Subtract(duration);
                     
                     var fullPath = Path.Combine(folderPath, name);
 

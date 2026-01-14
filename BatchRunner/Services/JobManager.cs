@@ -531,8 +531,13 @@ public class JobManager : IDisposable
                 
                 var status = job.Status.ToString();
                 var exit = job.ExitCode?.ToString() ?? "-";
+                
+                // Format timestamps ISO 8601 for parsing
+                var startStr = job.StartedAt?.ToString("O") ?? "-";
+                var endStr = job.EndedAt?.ToString("O") ?? "-";
 
                 lines.Add($"[{status}] {job.Name}");
+                lines.Add($"    Start: {startStr} | End: {endStr}");
                 lines.Add($"    Time: {duration} | Exit: {exit}");
                 lines.Add("");
             }
