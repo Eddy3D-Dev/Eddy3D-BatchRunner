@@ -115,6 +115,12 @@ public class MainViewModel : ObservableObject
                 continue;
             }
 
+            // Check if folder is already in the queue
+            if (Folders.Any(f => f.Path.Equals(folderPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
             if (CheckIfFolderIsCompleted(folderPath))
             {
                 completedFolders.Add(folderPath);
