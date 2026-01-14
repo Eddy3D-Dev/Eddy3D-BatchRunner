@@ -19,6 +19,7 @@ public class JobManager : IDisposable
     private readonly string _logRoot;
     private int _watchdogTicks = 0;
     private readonly DispatcherTimer _monitorTimer;
+    private bool _isScheduling;
 
     public JobManager(ObservableCollection<BatchFolder> folders, Dispatcher dispatcher, int totalCores, string logRoot)
     {
