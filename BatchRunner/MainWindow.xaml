@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchRunner"
+        xmlns:models="clr-namespace:BatchRunner.Models"
         mc:Ignorable="d"
         Title="BatchRunner"
         Icon="pack://application:,,,/assets/logo.ico"
@@ -18,6 +19,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- Header / Stats -->
         <Border Grid.Row="0"
                 Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource SurfaceBorderBrush}"
@@ -26,11 +28,12 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center">
-                <Button Content="Add .bat..." Width="110" Margin="0,0,8,0" Click="AddJobs_Click" />
+                <Button Content="Add Folder..." Width="110" Margin="0,0,8,0" Click="AddFolder_Click" />
                 <Button Content="Start queue" Width="110" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
-                <Button Content="Remove" Width="90" Margin="0,0,8,0" Command="{Binding RemoveJobCommand}" />
-                <Button Content="Cancel" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
-                <Button Content="Restart" Width="90" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" />
+                
+                <Button Content="Cancel Job" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
+                <Button Content="Restart Job" Width="90" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" />
+                
                 <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
                 <CheckBox Content="Show job window" Margin="0,0,16,0"
@@ -53,64 +56,95 @@
             </WrapPanel>
         </Border>
 
+        <!-- Folders List -->
         <Border Grid.Row="1"
                 Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource SurfaceBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 ClipToBounds="True">
-            <DataGrid x:Name="JobsGrid"
-                      ItemsSource="{Binding Jobs}"
-                      SelectedItem="{Binding SelectedJob}"
-                      AutoGenerateColumns="False"
-                      AlternationCount="2"
-                      BorderThickness="0"
-                      AllowDrop="True"
-                      PreviewMouseLeftButtonDown="JobsGrid_PreviewMouseLeftButtonDown"
-                      MouseMove="JobsGrid_MouseMove"
-                      Drop="JobsGrid_Drop"
-                      DragOver="JobsGrid_DragOver">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="180"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="60"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Added" Binding="{Binding AddedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Ended" Binding="{Binding EndedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat={}{0:hh\\:mm\\:ss}}" Width="90"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Exit" Binding="{Binding ExitCode}" Width="60"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="70"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTextColumn Header="Log" Binding="{Binding LogFileName}" Width="200"
-                                        ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                    <DataGridTemplateColumn Header="Actions" Width="160">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Button Content="Cancel" Margin="4,4"
-                                            Padding="12,2"
-                                            MinWidth="72"
-                                            Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}" />
-                                    <Button Content="Restart" Margin="4,4"
-                                            Padding="12,2"
-                                            MinWidth="72"
-                                            Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="FoldersListItemsControl"
+                              ItemsSource="{Binding Folders}"
+                              AllowDrop="True"
+                              PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
+                              MouseMove="FoldersList_MouseMove"
+                              Drop="FoldersList_Drop"
+                              DragOver="FoldersList_DragOver">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:BatchFolder}">
+                            <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
+                                      BorderThickness="0,0,0,1" BorderBrush="#20FFFFFF">
+                                <Expander.Header>
+                                    <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" /> <!-- Status -->
+                                            <ColumnDefinition Width="*" /> <!-- Name -->
+                                            <ColumnDefinition Width="Auto" /> <!-- Actions -->
+                                            <ColumnDefinition Width="40" /> <!-- Spacer for scrollbar -->
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
+                                        
+                                        <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
+                                                Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Expander.Header>
+                                <Expander.Content>
+                                    <!-- Jobs DataGrid -->
+                                    <DataGrid ItemsSource="{Binding Jobs}"
+                                              AutoGenerateColumns="False"
+                                              AlternationCount="2"
+                                              BorderThickness="0"
+                                              HeadersVisibility="Column"
+                                              Margin="20,0,0,8">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="180"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="60"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Ended" Binding="{Binding EndedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat={}{0:hh\\:mm\\:ss}}" Width="90"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Exit" Binding="{Binding ExitCode}" Width="60"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="70"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Log" Binding="{Binding LogFileName}" Width="200"
+                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTemplateColumn Header="Actions" Width="160">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <Button Content="Cancel" Margin="4,4"
+                                                                    Padding="12,2"
+                                                                    MinWidth="72"
+                                                                    Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}" />
+                                                            <Button Content="Restart" Margin="4,4"
+                                                                    Padding="12,2"
+                                                                    MinWidth="72"
+                                                                    Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Expander.Content>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Border>
     </Grid>
 </Window>
