@@ -7,6 +7,8 @@ using System.Windows.Threading;
 using BatchRunner.Models;
 using BatchRunner.Services;
 
+using System.Windows;
+
 namespace BatchRunner.ViewModels;
 
 public class MainViewModel : ObservableObject
@@ -55,6 +57,11 @@ public class MainViewModel : ObservableObject
 
         UpdateCoreCounts();
         SaveState();
+
+        _jobManager.QueueFinished += () => 
+        {
+            CommandManager.InvalidateRequerySuggested();
+        };
     }
 
     public ObservableCollection<BatchFolder> Folders { get; }
@@ -95,6 +102,9 @@ public class MainViewModel : ObservableObject
 
     public void AddFolders(IEnumerable<string> paths)
     {
+        var completedFolders = new List<string>();
+        var foldersToAdd = new List<string>();
+
         foreach (var path in paths)
         {
             // Path could be a file or folder. If file, take directory.
@@ -105,6 +115,26 @@ public class MainViewModel : ObservableObject
                 continue;
             }
 
+            if (CheckIfFolderIsCompleted(folderPath))
+            {
+                completedFolders.Add(folderPath);
+            }
+            foldersToAdd.Add(folderPath); // We collect valid paths first, then filtering or warning
+        }
+
+        if (completedFolders.Any())
+        {
+            var message = "The following folders are already completed (found 'batch_runner_summary.log' or 'save_results.log') and will be skipped:\n\n" + 
+                          string.Join("\n", completedFolders.Select(p => new DirectoryInfo(p).Name));
+
+            MessageBox.Show(message, "Completed Folders Skipped", MessageBoxButton.OK, MessageBoxImage.Information);            
+            
+            // Remove completed folders from the add list
+            foldersToAdd.RemoveAll(f => completedFolders.Contains(f));
+        }
+
+        foreach (var folderPath in foldersToAdd)
+        {
             var folderName = new DirectoryInfo(folderPath).Name;
             
             // Check for specific batch files in order
@@ -151,6 +181,15 @@ public class MainViewModel : ObservableObject
                 Folders.Add(folder);
             }
         }
+    }
+
+    private bool CheckIfFolderIsCompleted(string folderPath)
+    {
+        // Check for batch_runner_summary.log OR save_results.log
+        var summaryLog = Path.Combine(folderPath, "batch_runner_summary.log");
+        var saveResultsLog = Path.Combine(folderPath, "save_results.log");
+        
+        return File.Exists(summaryLog) || File.Exists(saveResultsLog);
     }
 
     public void AddBatchFiles(IEnumerable<string> paths)

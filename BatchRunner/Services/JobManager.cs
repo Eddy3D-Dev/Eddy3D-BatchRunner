@@ -133,12 +133,25 @@ public class JobManager : IDisposable
                 
                 // If all jobs completed in this folder, we loop to the next folder.
             }
+
+            // If we reach here, no jobs are running and no jobs were started.
+            // Attempts to start jobs would have returned early.
+            // Waiting for cores implies something is running (block caught by 'UsedCores' check loop?). 
+            // Actually, if we waited for cores, we returned.
+            // If we are here, the queue is effectively done.
+            if (IsQueueRunning)
+            {
+                IsQueueRunning = false;
+                _dispatcher.Invoke(() => QueueFinished?.Invoke());
+            }
         }
         finally
         {
             _isScheduling = false;
         }
     }
+
+    public event Action? QueueFinished;
 
     public void CancelJob(BatchJob job)
     {
@@ -296,6 +309,7 @@ public class JobManager : IDisposable
             if (folder.Jobs.All(j => j.Status == JobStatus.Completed))
             {
                 folder.Status = JobStatus.Completed;
+                WriteFolderSummaryLog(folder);
             }
             
             TryStartJobs();
@@ -411,6 +425,47 @@ public class JobManager : IDisposable
     {
         var escaped = value.Replace("'", "''");
         return $"'{escaped}'";
+    }
+
+    private static void WriteFolderSummaryLog(BatchFolder folder)
+    {
+        try
+        {
+            var logPath = Path.Combine(folder.Path, "batch_runner_summary.log");
+            var lines = new List<string>
+            {
+                "========================================",
+                "       EDDY3D BATCH RUNNER SUMMARY      ",
+                "========================================",
+                "",
+                $"Folder: {folder.Name}",
+                $"Path:   {folder.Path}",
+                $"Completed: {DateTimeOffset.Now:g}",
+                "",
+                "JOBS:",
+                "-----"
+            };
+
+            foreach (var job in folder.Jobs)
+            {
+                var duration = job.EndedAt.HasValue && job.StartedAt.HasValue 
+                    ? (job.EndedAt.Value - job.StartedAt.Value).ToString(@"hh\:mm\:ss") 
+                    : "--:--:--";
+                
+                var status = job.Status.ToString();
+                var exit = job.ExitCode?.ToString() ?? "-";
+
+                lines.Add($"[{status}] {job.Name}");
+                lines.Add($"    Time: {duration} | Exit: {exit}");
+                lines.Add("");
+            }
+
+            File.WriteAllText(logPath, string.Join(Environment.NewLine, lines));
+        }
+        catch
+        {
+            // Ignore failure to write log
+        }
     }
 
     private static void TryKillProcess(Process process)
