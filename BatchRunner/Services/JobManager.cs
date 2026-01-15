@@ -142,84 +142,75 @@ public class JobManager : IDisposable
         _isScheduling = true;
         try
         {
-            // Sequential logic:
-            // 1. Find the first folder that is not fully completed.
-            // 2. In that folder, find the first job that is Queued.
-            // 3. Ensure no other job is running in that folder (strict sequential per folder).
-            // 4. Ensure we are not running a job from a previous folder (strict sequential folders).
+            // Parallel logic:
+            // Iterate all folders. If a folder can start a job (has queued jobs, no running jobs, previous jobs done),
+            // and we have enough cores, start it.
+            // Do NOT return after starting a job; success/failure in one folder shouldn't block others (unless resources full).
 
-            // Actually, simply: iterate folders in order.
             foreach (var folder in _folders)
             {
-                // If folder has failed jobs and we are not retrying, or just generally if it's "blocked", maybe we stop?
-                // For now, let's assume we proceed unless specific stop condition.
-                // But user asked: "after completing one folder, it should go with the next one".
-                
-                // Check if this folder has any running jobs. If so, we can't start another one in this folder (sequential).
+                // 1. Strict sequential per folder: If any job is running in this folder, skip it.
                 if (folder.Jobs.Any(j => j.Status == JobStatus.Running))
                 {
-                    // A job is running in this folder. We wait.
-                    // And since we do folders sequentially, we don't look at next folders.
-                    return; 
+                    continue; 
                 }
 
-                // Check if this folder has incomplete jobs.
+                // 2. Check if this folder has failed/cancelled jobs -> Effectively "Done" (Stopped).
+                if (folder.Jobs.Any(j => j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled))
+                {
+                    // This folder is dead. Move to next folder.
+                    continue;
+                }
+
+                // 3. Find next queued job
                 var nextJob = folder.Jobs.FirstOrDefault(j => j.Status == JobStatus.Queued);
                 
                 if (nextJob != null)
                 {
-                    // Found a job to run in this folder.
-                    // Check if previous jobs in this folder are all completed (or skipped/failed if that allows proceeding?)
-                    // The requirement says "wait for the former step to be completed". 
-                    // So we must ensure all prior jobs are Completed.
-                    
+                    // 4. Ensure all prior jobs in this folder are Completed
                     var index = folder.Jobs.IndexOf(nextJob);
                     var previousJobs = folder.Jobs.Take(index);
                     if (previousJobs.Any(j => j.Status != JobStatus.Completed))
                     {
-                        // Previous jobs not completed (maybe Failed or Cancelled). 
-                        // If Failed/Cancelled, do we stop? 
-                        // Usually in strict sequence, failure stops the chain.
-                        // Let's assume we stop.
-                        return;
+                         // Blocked by a previous job that's not 'Completed' (though we checked Failed above)
+                         // e.g. maybe some weird state. Just skip.
+                        continue;
                     }
 
-                    // Check resources
+                    // 5. Check resources
                     if (nextJob.RequiredCores > AvailableCores)
                     {
-                        // Not enough cores. We wait. 
-                        // (Since we are strictly sequential, we don't try to skip to next folder)
-                        return; 
+                        // Not enough cores for this specific job right now.
+                        // Skip this folder, try next folder (maybe it has a smaller job).
+                        continue; 
                     }
 
+                    // Start the job
                     StartJob(nextJob, folder);
-                    return; // Started a job, exit.
+                    
+                    // Continue loop to see if we can start jobs in OTHER folders with remaining cores
                 }
-
-                // If no queued jobs, maybe the folder is done?
-                // Check if any job failed in this folder? 
-                if (folder.Jobs.Any(j => j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled))
-                {
-                    // Folder failed. Do we proceed to next folder? 
-                    // User said "after completing one folder". Implies success. 
-                    // But if it fails, maybe we should stop everything?
-                    // Let's be safe: if a folder failed, we stop the queue.
-                    IsQueueRunning = false; 
-                    return;
-                }
-                
-                // If all jobs completed in this folder, we loop to the next folder.
             }
 
-            // If we reach here, no jobs are running and no jobs were started.
-            // Attempts to start jobs would have returned early.
-            // Waiting for cores implies something is running (block caught by 'UsedCores' check loop?). 
-            // Actually, if we waited for cores, we returned.
-            // If we are here, the queue is effectively done.
-            if (IsQueueRunning)
+            // After checking all folders:
+            // If no jobs are running anywhere, AND no jobs are queued that could run...
+            // Actually simpler: if no jobs are running, we are either done or stuck.
+            
+            var anyRunning = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Running);
+            
+            // If nothing is running, and we have queued jobs, it might be that they don't fit in TotalCores?
+            // Or just that we finished everything.
+
+            var anyQueued = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Queued);
+
+            if (!anyRunning && !anyQueued)
             {
-                IsQueueRunning = false;
-                _dispatcher.Invoke(() => QueueFinished?.Invoke());
+                // All done
+                if (IsQueueRunning)
+                {
+                    IsQueueRunning = false;
+                    _dispatcher.Invoke(() => QueueFinished?.Invoke());
+                }
             }
         }
         finally

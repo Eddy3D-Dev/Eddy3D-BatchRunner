@@ -154,7 +154,12 @@ public class MainViewModel : ObservableObject
 
         foreach (var folderPath in foldersToAdd)
         {
-            var folderName = new DirectoryInfo(folderPath).Name;
+            var resultInfo = new DirectoryInfo(folderPath);
+            var folderName = resultInfo.Name;
+            if (folderName.Equals("Scripts", StringComparison.OrdinalIgnoreCase) && resultInfo.Parent != null)
+            {
+                folderName = resultInfo.Parent.Name;
+            }
             var batchFiles = new[]
             {
                 "run_mesh.bat",
@@ -164,6 +169,14 @@ public class MainViewModel : ObservableObject
                 "save_results_to_dataset.bat"
             };
 
+            // Determine reference cores from run_mesh.bat
+            var refCores = 1;
+            var meshBat = Path.Combine(folderPath, "run_mesh.bat");
+            if (File.Exists(meshBat))
+            {
+                refCores = BatchFileParser.GetRequiredCores(meshBat);
+            }
+
             var jobs = new ObservableCollection<BatchJob>();
             
             foreach (var batchFile in batchFiles)
@@ -171,12 +184,15 @@ public class MainViewModel : ObservableObject
                 var fullPath = Path.Combine(folderPath, batchFile);
                 if (File.Exists(fullPath))
                 {
+                    // Use reference cores for ALL jobs in this folder, per user request.
+                    // "use meshing as reference ... allocate 8 for that folder"
+                    
                     jobs.Add(new BatchJob
                     {
                         Id = Guid.NewGuid(),
                         BatPath = fullPath,
                         Name = batchFile, 
-                        RequiredCores = BatchFileParser.GetRequiredCores(fullPath),
+                        RequiredCores = refCores, 
                         Status = JobStatus.Queued,
                         AddedAt = DateTimeOffset.Now
                     });
@@ -206,7 +222,13 @@ public class MainViewModel : ObservableObject
         {
             var lines = File.ReadAllLines(logPath);
             var jobs = new ObservableCollection<BatchJob>();
-            var folderName = new DirectoryInfo(folderPath).Name;
+            
+            var resultInfo = new DirectoryInfo(folderPath);
+            var folderName = resultInfo.Name;
+            if (folderName.Equals("Scripts", StringComparison.OrdinalIgnoreCase) && resultInfo.Parent != null)
+            {
+                folderName = resultInfo.Parent.Name;
+            }
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -320,7 +342,12 @@ public class MainViewModel : ObservableObject
 
     private BatchFolder CreateCompletedFolderGeneric(string folderPath)
     {
-        var folderName = new DirectoryInfo(folderPath).Name;
+        var resultInfo = new DirectoryInfo(folderPath);
+        var folderName = resultInfo.Name;
+        if (folderName.Equals("Scripts", StringComparison.OrdinalIgnoreCase) && resultInfo.Parent != null)
+        {
+            folderName = resultInfo.Parent.Name;
+        }
         var batchFiles = new[]
         {
             "run_mesh.bat",
