@@ -52,7 +52,23 @@ public static class BatchFileParser
                 var dir = Path.GetDirectoryName(batPath);
                 if (dir is not null)
                 {
+
                     var dictPath = Path.Combine(dir, "system", "decomposeParDict");
+                    
+                    // If not found in current dir, check parent (e.g. if bat is in Scripts/)
+                    if (!File.Exists(dictPath))
+                    {
+                         var parent = Directory.GetParent(dir);
+                         if (parent != null)
+                         {
+                             var parentDictPath = Path.Combine(parent.FullName, "system", "decomposeParDict");
+                             if (File.Exists(parentDictPath))
+                             {
+                                 dictPath = parentDictPath;
+                             }
+                         }
+                    }
+
                     if (File.Exists(dictPath))
                     {
                         var content = File.ReadAllText(dictPath);

@@ -113,6 +113,13 @@ public class MainViewModel : ObservableObject
                 continue;
             }
 
+            // Check if there is a "Scripts" folder inside. If so, use that instead.
+            var scriptsPath = Path.Combine(folderPath, "Scripts");
+            if (Directory.Exists(scriptsPath))
+            {
+                folderPath = scriptsPath;
+            }
+
             // Check if folder is already in the queue
             if (Folders.Any(f => f.Path.Equals(folderPath, StringComparison.OrdinalIgnoreCase)))
             {
