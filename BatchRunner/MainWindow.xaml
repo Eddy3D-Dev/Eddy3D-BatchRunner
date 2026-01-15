@@ -9,7 +9,7 @@
         Title="BatchRunner"
         Icon="pack://application:,,,/assets/logo.ico"
         Height="650"
-        Width="1100"
+        Width="1250"
         MinHeight="520"
         MinWidth="900"
         Background="{StaticResource AppBackgroundBrush}">
@@ -55,6 +55,7 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
+                <Button Content="Visualise Results" Width="100" Margin="16,0,0,0" Click="VisualizeResults_Click" />
             </WrapPanel>
         </Border>
 
