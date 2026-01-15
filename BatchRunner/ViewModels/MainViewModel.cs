@@ -165,7 +165,7 @@ public class MainViewModel : ObservableObject
                 "run_mesh.bat",
                 "symbolic_link_creator.bat",
                 "run_sim_all.bat",
-                "run_divU_all.bat",
+                "run_postprocess_U_all.bat",
                 "save_results_to_dataset.bat"
             };
 
@@ -353,7 +353,7 @@ public class MainViewModel : ObservableObject
             "run_mesh.bat",
             "symbolic_link_creator.bat",
             "run_sim_all.bat",
-            "run_divU_all.bat",
+            "run_postprocess_U_all.bat",
             "save_results_to_dataset.bat"
         };
 
