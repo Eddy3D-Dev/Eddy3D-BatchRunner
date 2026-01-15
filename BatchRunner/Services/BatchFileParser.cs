@@ -5,7 +5,7 @@ namespace BatchRunner.Services;
 
 public static class BatchFileParser
 {
-    private static readonly Regex NpRegex = new(@"(?i)(?:^|\s)-np\s*=?\s*(\d+)", RegexOptions.Compiled);
+    private static readonly Regex NpRegex = new(@"(?i)(?:^|\s)-(?:np|n)\s*=?\s*(\d+)", RegexOptions.Compiled);
 
     public static int GetRequiredCores(string batPath)
     {
@@ -36,54 +36,48 @@ public static class BatchFileParser
 
             foreach (Match match in NpRegex.Matches(line))
             {
-                var value = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
-                if (int.TryParse(value, out var parsed) && parsed > cores)
+                if (match.Groups[1].Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed > cores)
                 {
                     cores = parsed;
                 }
             }
         }
 
-        // If no explicit -np found (or found 1), try to find system/decomposeParDict
-        if (cores <= 1)
+        // Always check system/decomposeParDict and take the max value.
+        // This handles cases where scripts might not have -np flags but rely on the dictionary.
+        try
         {
-            try
+            var dir = Path.GetDirectoryName(batPath);
+            
+            // Recursively check parent directories for system/decomposeParDict (max 5 levels up)
+            for (int i = 0; i < 5; i++)
             {
-                var dir = Path.GetDirectoryName(batPath);
-                if (dir is not null)
+                if (dir is null || !Directory.Exists(dir))
                 {
+                    break;
+                }
 
-                    var dictPath = Path.Combine(dir, "system", "decomposeParDict");
-                    
-                    // If not found in current dir, check parent (e.g. if bat is in Scripts/)
-                    if (!File.Exists(dictPath))
+                var dictPath = Path.Combine(dir, "system", "decomposeParDict");
+                if (File.Exists(dictPath))
+                {
+                    var content = File.ReadAllText(dictPath);
+                    var match = Regex.Match(content, @"numberOfSubdomains\s+(\d+)\s*;");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out var dictCores))
                     {
-                         var parent = Directory.GetParent(dir);
-                         if (parent != null)
-                         {
-                             var parentDictPath = Path.Combine(parent.FullName, "system", "decomposeParDict");
-                             if (File.Exists(parentDictPath))
-                             {
-                                 dictPath = parentDictPath;
-                             }
-                         }
-                    }
-
-                    if (File.Exists(dictPath))
-                    {
-                        var content = File.ReadAllText(dictPath);
-                        var match = Regex.Match(content, @"numberOfSubdomains\s+(\d+);");
-                        if (match.Success && int.TryParse(match.Groups[1].Value, out var dictCores))
+                        if (dictCores > cores)
                         {
                             cores = dictCores;
                         }
                     }
+                    break;
                 }
+                
+                dir = Directory.GetParent(dir)?.FullName;
             }
-            catch
-            {
-                // ignore errors reading dict
-            }
+        }
+        catch
+        {
+            // ignore errors reading dict
         }
 
         return Math.Max(1, cores);
