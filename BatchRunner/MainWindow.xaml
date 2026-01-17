@@ -9,7 +9,7 @@
         Title="BatchRunner"
         Icon="pack://application:,,,/assets/logo.ico"
         Height="650"
-        Width="1250"
+        Width="1450"
         MinHeight="520"
         MinWidth="900"
         Background="{StaticResource AppBackgroundBrush}">
@@ -31,6 +31,10 @@
                 <Button Content="Add Folder..." Width="100" Margin="0,0,8,0" Click="AddFolder_Click" />
                 <Button Content="Add .bat..." Width="80" Margin="0,0,16,0" Click="AddJobs_Click" />
                 
+                <Button Content="Expand All" Width="80" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}" />
+                <Button Content="Collapse All" Width="80" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}" />
+                <Button Content="Remove All" Width="80" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}" />
+                
                 <Button Content="Start queue" Width="100" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
                 
                 <Button Content="Cancel Job" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
@@ -49,7 +53,8 @@
                         <TextBlock Text="Cores:" VerticalAlignment="Center" Margin="0,0,4,0" />
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
-                        <TextBlock Text="{Binding TotalCores}" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" 
+                                 VerticalAlignment="Center" Width="40" TextAlignment="Center" />
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />

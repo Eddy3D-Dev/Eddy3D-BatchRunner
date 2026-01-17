@@ -13,9 +13,10 @@ public static class CpuInfo
             using var results = searcher.Get();
             foreach (var item in results)
             {
-                if (item["NumberOfCores"] is int cores)
+                // WMI returns NumberOfCores as uint32
+                if (item["NumberOfCores"] != null)
                 {
-                    total += cores;
+                    total += Convert.ToInt32(item["NumberOfCores"]);
                 }
             }
 

@@ -104,7 +104,7 @@ public class JobManager : IDisposable
         }
     }
 
-    public int TotalCores { get; }
+    public int TotalCores { get; set; }
 
     public bool AutoRetryFailedJobs { get; set; }
 
