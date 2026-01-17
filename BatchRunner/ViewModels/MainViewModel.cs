@@ -54,6 +54,9 @@ public class MainViewModel : ObservableObject
         CancelJobCommand = new RelayCommand(CancelJob, CanCancelJob);
         RestartJobCommand = new RelayCommand(RestartJob, CanRestartJob);
         StartQueueCommand = new RelayCommand(StartQueue, CanStartQueue);
+        ExpandAllCommand = new RelayCommand(ExpandAll);
+        CollapseAllCommand = new RelayCommand(CollapseAll);
+        RemoveAllCommand = new RelayCommand(RemoveAll, CanRemoveAll);
 
         UpdateCoreCounts();
         SaveState();
@@ -86,7 +89,19 @@ public class MainViewModel : ObservableObject
         }
     }
 
-    public int TotalCores => _jobManager.TotalCores;
+    public int TotalCores
+    {
+        get => _jobManager.TotalCores;
+        set
+        {
+            if (_jobManager.TotalCores != value)
+            {
+                _jobManager.TotalCores = value;
+                OnPropertyChanged(nameof(TotalCores));
+                OnPropertyChanged(nameof(AvailableCores));
+            }
+        }
+    }
 
     public int UsedCores => _jobManager.UsedCores;
 
@@ -99,6 +114,12 @@ public class MainViewModel : ObservableObject
     public ICommand RestartJobCommand { get; }
 
     public ICommand StartQueueCommand { get; }
+    
+    public ICommand ExpandAllCommand { get; }
+
+    public ICommand CollapseAllCommand { get; }
+
+    public ICommand RemoveAllCommand { get; }
 
     public void AddFolders(IEnumerable<string> paths)
     {
@@ -694,5 +715,46 @@ public class MainViewModel : ObservableObject
     {
         // Check if any folder has queued jobs
         return !_jobManager.IsQueueRunning && Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Queued || j.Status == JobStatus.Running));
+    }
+
+    private void ExpandAll(object? parameter)
+    {
+        foreach (var folder in Folders)
+        {
+            folder.IsExpanded = true;
+        }
+    }
+
+    private void CollapseAll(object? parameter)
+    {
+        foreach (var folder in Folders)
+        {
+            folder.IsExpanded = false;
+        }
+    }
+
+    private void RemoveAll(object? parameter)
+    {
+        // Must convert to list because we are modifying collection
+        var foldersCopy = Folders.ToList();
+        
+        foreach (var folder in foldersCopy)
+        {
+            // Cancel running jobs
+            foreach(var job in folder.Jobs)
+            {
+                if (job.Status == JobStatus.Running)
+                {
+                    _jobManager.CancelJob(job);
+                }
+            }
+        }
+        
+        Folders.Clear();
+    }
+
+    private bool CanRemoveAll(object? parameter)
+    {
+        return Folders.Any();
     }
 }
