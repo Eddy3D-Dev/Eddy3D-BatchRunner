@@ -44,6 +44,9 @@
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
                 <CheckBox Content="Show job window" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.ShowConsoleWindow}" />
+                <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,0"
+                          IsChecked="{Binding Settings.CompressCompletedCases}"
+                          ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
                 <Border Background="{StaticResource HeaderBackgroundBrush}"
                         BorderBrush="{StaticResource SurfaceBorderBrush}"
                         BorderThickness="1"

@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Windows.Threading;
 using BatchRunner.Models;
 
@@ -109,6 +110,8 @@ public class JobManager : IDisposable
     public bool AutoRetryFailedJobs { get; set; }
 
     public bool ShowConsoleWindow { get; set; } = true;
+
+    public bool CompressCompletedCases { get; set; }
 
     public bool IsQueueRunning { get; private set; }
 
@@ -378,6 +381,11 @@ public class JobManager : IDisposable
             {
                 folder.Status = JobStatus.Completed;
                 WriteFolderSummaryLog(folder);
+
+                if (CompressCompletedCases)
+                {
+                    Task.Run(() => ZipAndCleanup(folder));
+                }
             }
             
             TryStartJobs();
@@ -561,6 +569,57 @@ public class JobManager : IDisposable
         job.EndedAt = null;
         job.ExitCode = null;
         job.LogPath = null;
+    }
+
+    private void ZipAndCleanup(BatchFolder folder)
+    {
+        try
+        {
+            // Determine the true "Case Folder" root
+            // If the folder path ends in "Scripts", the case folder is the parent.
+            var caseDirInfo = new DirectoryInfo(folder.Path);
+            DirectoryInfo? caseRoot = caseDirInfo;
+
+            if (caseDirInfo.Name.Equals("Scripts", StringComparison.OrdinalIgnoreCase) && caseDirInfo.Parent != null)
+            {
+                caseRoot = caseDirInfo.Parent;
+            }
+
+            // Validation: save_results.log must exist
+            // Check in folder.Path (BATCH files location) AND caseRoot
+            var logInFolder = Path.Combine(folder.Path, "save_results.log");
+            var logInRoot = Path.Combine(caseRoot.FullName, "save_results.log");
+            
+            if (!File.Exists(logInFolder) && !File.Exists(logInRoot))
+            {
+                Debug.WriteLine($"Skipping cleanup for {folder.Name}: save_results.log not found.");
+                return;
+            }
+
+            var parentDir = caseRoot.Parent;
+            if (parentDir == null) return;
+
+            var zipPath = Path.Combine(parentDir.FullName, $"{caseRoot.Name}.zip");
+
+            // Delete existing zip if any
+            if (File.Exists(zipPath))
+            {
+                File.Delete(zipPath);
+            }
+
+            ZipFile.CreateFromDirectory(caseRoot.FullName, zipPath);
+
+            if (File.Exists(zipPath))
+            {
+                // Delete the case root (which includes Scripts if it was a subfolder)
+                Directory.Delete(caseRoot.FullName, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error to a global error log or debug
+            Debug.WriteLine($"Failed to compress/cleanup {folder.Path}: {ex.Message}");
+        }
     }
 
     public void Dispose()
