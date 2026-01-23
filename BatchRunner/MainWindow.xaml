@@ -28,30 +28,31 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center">
-                <Button Content="Add Folder..." Width="100" Margin="0,0,8,0" Click="AddFolder_Click" />
-                <Button Content="Add .bat..." Width="80" Margin="0,0,16,0" Click="AddJobs_Click" />
+                <Button Content="Add Folder..." Margin="0,0,8,10" Click="AddFolder_Click" />
+                <Button Content="Add .bat..." Margin="0,0,16,10" Click="AddJobs_Click" />
                 
-                <Button Content="Expand All" Width="80" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}" />
-                <Button Content="Collapse All" Width="80" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}" />
-                <Button Content="Remove All" Width="80" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}" />
+                <Button Content="Expand All" Margin="0,0,8,10" Command="{Binding ExpandAllCommand}" />
+                <Button Content="Collapse All" Margin="0,0,8,10" Command="{Binding CollapseAllCommand}" />
+                <Button Content="Remove All" Margin="0,0,16,10" Command="{Binding RemoveAllCommand}" />
                 
-                <Button Content="Start queue" Width="100" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" />
+                <Button Content="Start queue" Margin="0,0,8,10" Command="{Binding StartQueueCommand}" />
                 
-                <Button Content="Cancel Job" Width="90" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" />
-                <Button Content="Restart Job" Width="90" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" />
+                <Button Content="Cancel Job" Margin="0,0,8,10" Command="{Binding CancelJobCommand}" />
+                <Button Content="Restart Job" Margin="0,0,12,10" Command="{Binding RestartJobCommand}" />
                 
-                <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
+                <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,10"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
-                <CheckBox Content="Show job window" Margin="0,0,16,0"
+                <CheckBox Content="Show job window" Margin="0,0,16,10"
                           IsChecked="{Binding Settings.ShowConsoleWindow}" />
-                <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,0"
+                <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,10"
                           IsChecked="{Binding Settings.CompressCompletedCases}"
                           ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
                 <Border Background="{StaticResource HeaderBackgroundBrush}"
                         BorderBrush="{StaticResource SurfaceBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="8"
-                        Padding="10,4">
+                        Padding="10,4"
+                        Margin="0,0,0,10">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Cores:" VerticalAlignment="Center" Margin="0,0,4,0" />
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
@@ -63,7 +64,7 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button Content="Visualise Results" Width="100" Margin="16,0,0,0" Click="VisualizeResults_Click" />
+                <Button Content="Visualise Results" Margin="16,0,0,10" Click="VisualizeResults_Click" />
             </WrapPanel>
         </Border>
 
