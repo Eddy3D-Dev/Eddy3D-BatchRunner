@@ -16,4 +16,11 @@ public class AppSettings : ObservableObject
         get => _showConsoleWindow;
         set => SetProperty(ref _showConsoleWindow, value);
     }
+
+    private bool _compressCompletedCases;
+    public bool CompressCompletedCases
+    {
+        get => _compressCompletedCases;
+        set => SetProperty(ref _compressCompletedCases, value);
+    }
 }

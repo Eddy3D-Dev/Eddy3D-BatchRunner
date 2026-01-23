@@ -30,6 +30,7 @@ public class MainViewModel : ObservableObject
         {
             Settings.AutoRetryFailedJobs = state.Settings.AutoRetryFailedJobs;
             Settings.ShowConsoleWindow = state.Settings.ShowConsoleWindow;
+            Settings.CompressCompletedCases = state.Settings.CompressCompletedCases;
         }
 
         Folders = new ObservableCollection<BatchFolder>(state.Folders ?? new List<BatchFolder>());
@@ -39,7 +40,8 @@ public class MainViewModel : ObservableObject
         _jobManager = new JobManager(Folders, _dispatcher, CpuInfo.GetPhysicalCoreCount(), logRoot)
         {
             AutoRetryFailedJobs = Settings.AutoRetryFailedJobs,
-            ShowConsoleWindow = Settings.ShowConsoleWindow
+            ShowConsoleWindow = Settings.ShowConsoleWindow,
+            CompressCompletedCases = Settings.CompressCompletedCases
         };
 
         Settings.PropertyChanged += SettingsOnPropertyChanged;
@@ -162,7 +164,12 @@ public class MainViewModel : ObservableObject
             }
 
             // 2. Try to load from save_results.log (Fallback: Mark all as completed)
-            if (File.Exists(saveResultsLog))
+            // If we are in "Scripts", save_results.log might be in the parent (case root)
+            var saveResultsLogParent = Directory.GetParent(folderPath)?.FullName is string parent 
+                ? Path.Combine(parent, "save_results.log") 
+                : null;
+
+            if (File.Exists(saveResultsLog) || (saveResultsLogParent != null && File.Exists(saveResultsLogParent)))
             {
                 var folder = CreateCompletedFolderGeneric(folderPath);
                 Folders.Add(folder);
@@ -595,6 +602,7 @@ public class MainViewModel : ObservableObject
     {
         _jobManager.AutoRetryFailedJobs = Settings.AutoRetryFailedJobs;
         _jobManager.ShowConsoleWindow = Settings.ShowConsoleWindow;
+        _jobManager.CompressCompletedCases = Settings.CompressCompletedCases;
         SaveState();
     }
 
@@ -612,7 +620,8 @@ public class MainViewModel : ObservableObject
             Settings = new AppSettings
             {
                 AutoRetryFailedJobs = Settings.AutoRetryFailedJobs,
-                ShowConsoleWindow = Settings.ShowConsoleWindow
+                ShowConsoleWindow = Settings.ShowConsoleWindow,
+                CompressCompletedCases = Settings.CompressCompletedCases
             }
         };
 
