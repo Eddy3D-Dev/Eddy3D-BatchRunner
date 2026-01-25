@@ -194,7 +194,8 @@ public class MainViewModel : ObservableObject
                 "symbolic_link_creator.bat",
                 "run_sim_all.bat",
                 "run_postprocess_U_all.bat",
-                "save_results_to_dataset.bat"
+                "save_results_to_dataset.bat",
+                "delete_processor_folders.bat"
             };
 
             // Determine reference cores from run_mesh.bat
@@ -382,7 +383,8 @@ public class MainViewModel : ObservableObject
             "symbolic_link_creator.bat",
             "run_sim_all.bat",
             "run_postprocess_U_all.bat",
-            "save_results_to_dataset.bat"
+            "save_results_to_dataset.bat",
+            "delete_processor_folders.bat"
         };
 
         var jobs = new ObservableCollection<BatchJob>();
