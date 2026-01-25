@@ -40,3 +40,15 @@ The single EXE will be in `BatchRunner\bin\Release\net8.0-windows\win-x64\publis
 ```
 
 The publish output will be in `publish`.
+
+## Releases
+
+Releases are created automatically via GitHub Actions:
+
+| Branch | Trigger | Tag | Type |
+|--------|---------|-----|------|
+| `dev` | Push | `{version}-pre.{N}` | Pre-release |
+| `release` | Merged PR | `{version}` | Release |
+
+Version is read from `BatchRunner.csproj`. Bump the version before merging to `release` to create a new release.
+
