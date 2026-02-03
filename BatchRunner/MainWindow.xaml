@@ -12,7 +12,8 @@
         Width="1450"
         MinHeight="520"
         MinWidth="900"
-        Background="{StaticResource AppBackgroundBrush}">
+        Background="{StaticResource AppBackgroundBrush}"
+        Closing="Window_Closing">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

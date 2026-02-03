@@ -122,6 +122,8 @@ public class MainViewModel : ObservableObject
     public ICommand CollapseAllCommand { get; }
 
     public ICommand RemoveAllCommand { get; }
+    
+    public bool AnyJobsRunning => Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Running));
 
     public void AddFolders(IEnumerable<string> paths)
     {
