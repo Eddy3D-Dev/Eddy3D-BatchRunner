@@ -23,6 +23,12 @@ public partial class MainWindow : Window
         InitializeComponent();
         _viewModel = new MainViewModel();
         DataContext = _viewModel;
+
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        if (version != null)
+        {
+            Title += $" — {version.Major}.{version.Minor}.{version.Build}";
+        }
     }
 
     private void AddFolder_Click(object sender, RoutedEventArgs e)
