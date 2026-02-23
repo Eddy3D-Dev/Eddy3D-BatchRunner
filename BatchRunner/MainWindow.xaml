@@ -75,15 +75,15 @@
                 BorderBrush="{StaticResource SurfaceBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
-                ClipToBounds="True">
+                ClipToBounds="True"
+                AllowDrop="True"
+                Drop="FoldersList_Drop"
+                DragOver="FoldersList_DragOver">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <ItemsControl x:Name="FoldersListItemsControl"
                               ItemsSource="{Binding Folders}"
-                              AllowDrop="True"
                               PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
-                              MouseMove="FoldersList_MouseMove"
-                              Drop="FoldersList_Drop"
-                              DragOver="FoldersList_DragOver">
+                              MouseMove="FoldersList_MouseMove">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
