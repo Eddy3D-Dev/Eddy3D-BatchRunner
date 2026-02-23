@@ -29,17 +29,25 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center">
-                <Button Content="Add Folder..." Margin="0,0,8,10" Click="AddFolder_Click" />
-                <Button Content="Add .bat..." Margin="0,0,16,10" Click="AddJobs_Click" />
+                <Button Content="Add Folder..." Margin="0,0,8,10" Click="AddFolder_Click"
+                        ToolTip="Import a folder containing batch files to the queue" />
+                <Button Content="Add .bat..." Margin="0,0,16,10" Click="AddJobs_Click"
+                        ToolTip="Import individual .bat files to the queue" />
                 
-                <Button Content="Expand All" Margin="0,0,8,10" Command="{Binding ExpandAllCommand}" />
-                <Button Content="Collapse All" Margin="0,0,8,10" Command="{Binding CollapseAllCommand}" />
-                <Button Content="Remove All" Margin="0,0,16,10" Command="{Binding RemoveAllCommand}" />
+                <Button Content="Expand All" Margin="0,0,8,10" Command="{Binding ExpandAllCommand}"
+                        ToolTip="Expand all folder groups in the list" />
+                <Button Content="Collapse All" Margin="0,0,8,10" Command="{Binding CollapseAllCommand}"
+                        ToolTip="Collapse all folder groups in the list" />
+                <Button Content="Remove All" Margin="0,0,16,10" Command="{Binding RemoveAllCommand}"
+                        ToolTip="Clear the entire queue" />
                 
-                <Button Content="Start queue" Margin="0,0,8,10" Command="{Binding StartQueueCommand}" />
+                <Button Content="Start queue" Margin="0,0,8,10" Command="{Binding StartQueueCommand}"
+                        ToolTip="Begin processing the queued jobs" />
                 
-                <Button Content="Cancel Job" Margin="0,0,8,10" Command="{Binding CancelJobCommand}" />
-                <Button Content="Restart Job" Margin="0,0,12,10" Command="{Binding RestartJobCommand}" />
+                <Button Content="Cancel Job" Margin="0,0,8,10" Command="{Binding CancelJobCommand}"
+                        ToolTip="Stop the currently selected job" />
+                <Button Content="Restart Job" Margin="0,0,12,10" Command="{Binding RestartJobCommand}"
+                        ToolTip="Restart the selected job (or all jobs in the selected folder)" />
                 
                 <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,10"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
@@ -65,7 +73,8 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button Content="Visualise Results" Margin="16,0,0,10" Click="VisualizeResults_Click" />
+                <Button Content="Visualise Results" Margin="16,0,0,10" Click="VisualizeResults_Click"
+                        ToolTip="Open the Eddy3D Visualizer in your browser" />
             </WrapPanel>
         </Border>
 
@@ -102,7 +111,8 @@
                                         
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}" />
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Remove this folder from the queue" />
                                     </Grid>
                                 </Expander.Header>
                                 <Expander.Content>
@@ -140,12 +150,14 @@
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                    CommandParameter="{Binding}" />
+                                                                    CommandParameter="{Binding}"
+                                                                    ToolTip="Stop this job" />
                                                             <Button Content="Restart" Margin="4,4"
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                    CommandParameter="{Binding}" />
+                                                                    CommandParameter="{Binding}"
+                                                                    ToolTip="Restart this job" />
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
