@@ -122,6 +122,8 @@ public class MainViewModel : ObservableObject
     public ICommand CollapseAllCommand { get; }
 
     public ICommand RemoveAllCommand { get; }
+    
+    public bool AnyJobsRunning => Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Running));
 
     public void AddFolders(IEnumerable<string> paths)
     {
@@ -194,7 +196,8 @@ public class MainViewModel : ObservableObject
                 "symbolic_link_creator.bat",
                 "run_sim_all.bat",
                 "run_postprocess_U_all.bat",
-                "save_results_to_dataset.bat"
+                "save_results_to_dataset.bat",
+                "delete_processor_folders.bat"
             };
 
             // Determine reference cores from run_mesh.bat
@@ -257,6 +260,9 @@ public class MainViewModel : ObservableObject
             {
                 folderName = resultInfo.Parent.Name;
             }
+
+            // Get consistency cores
+            var refCores = GetReferenceCores(folderPath);
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -332,6 +338,13 @@ public class MainViewModel : ObservableObject
                     
                     var fullPath = Path.Combine(folderPath, name);
 
+                    // Logic for cores: use refCores if > 1, else parse individual
+                    var cores = refCores;
+                    if (cores <= 1 && File.Exists(fullPath))
+                    {
+                        cores = BatchFileParser.GetRequiredCores(fullPath);
+                    }
+
                     jobs.Add(new BatchJob
                     {
                         Id = Guid.NewGuid(),
@@ -342,7 +355,7 @@ public class MainViewModel : ObservableObject
                         StartedAt = startedAt,
                         EndedAt = endedAt,
                         ExitCode = exitCode,
-                        RequiredCores = File.Exists(fullPath) ? BatchFileParser.GetRequiredCores(fullPath) : 1
+                        RequiredCores = cores
                         // LogPath is tricky, we can try to guess it or leave empty
                     });
                 }
@@ -382,22 +395,30 @@ public class MainViewModel : ObservableObject
             "symbolic_link_creator.bat",
             "run_sim_all.bat",
             "run_postprocess_U_all.bat",
-            "save_results_to_dataset.bat"
+            "save_results_to_dataset.bat",
+            "delete_processor_folders.bat"
         };
 
         var jobs = new ObservableCollection<BatchJob>();
+        var refCores = GetReferenceCores(folderPath);
             
         foreach (var batchFile in batchFiles)
         {
             var fullPath = Path.Combine(folderPath, batchFile);
             if (File.Exists(fullPath))
             {
+                var cores = refCores;
+                if (cores <= 1)
+                {
+                    cores = BatchFileParser.GetRequiredCores(fullPath);
+                }
+
                 jobs.Add(new BatchJob
                 {
                     Id = Guid.NewGuid(),
                     BatPath = fullPath,
                     Name = batchFile, 
-                    RequiredCores = BatchFileParser.GetRequiredCores(fullPath),
+                    RequiredCores = cores,
                     Status = JobStatus.Completed,
                     AddedAt = DateTimeOffset.Now,
                     StartedAt = DateTimeOffset.Now,
@@ -439,12 +460,42 @@ public class MainViewModel : ObservableObject
             var folderName = Path.GetFileName(path); // Use file name as "folder" name for UI
             var dirPath = Path.GetDirectoryName(path) ?? path;
 
+            // Use reference cores from the folder if run_mesh.bat exists
+            var refCores = GetReferenceCores(dirPath);
+
+            // If refCores is 1 (not found or actual 1), try individual file??
+            // Actually, if run_mesh exists, we trust it. If not, maybe parse the file itself.
+            // But to be safe and consistent with user request: if run_mesh exists, use it.
+            // If NOT, then parse the individual file.
+            
+            var cores = refCores;
+            if (cores == 1) // maybe run_mesh didn't exist
+            {
+                 cores = BatchFileParser.GetRequiredCores(path);
+            }
+            // Actually, user wants "24 processors for every one of the batch files"
+            // implying they are in a folder that has a mesh file. 
+            // If I just call GetReferenceCores, and it returns 1 (because no run_mesh), 
+            // then we allow falling back to individual parsing. 
+            // But if it finds run_mesh -> 24, we use 24.
+            
+            // Re-eval logic:
+            // 1. Check for run_mesh in dir. 
+            // 2. If valid (>1), use it.
+            // 3. Else, parse file itself.
+
+            if (cores == 1 && File.Exists(Path.Combine(dirPath, "run_mesh.bat")))
+            {
+                 // ensure we didn't miss it
+                 cores = GetReferenceCores(dirPath);
+            }
+            
             var job = new BatchJob
             {
                 Id = Guid.NewGuid(),
                 BatPath = path,
                 Name = Path.GetFileNameWithoutExtension(path),
-                RequiredCores = BatchFileParser.GetRequiredCores(path),
+                RequiredCores = cores,
                 Status = JobStatus.Queued,
                 AddedAt = DateTimeOffset.Now
             };
@@ -470,7 +521,10 @@ public class MainViewModel : ObservableObject
         foreach (var folder in Folders)
         {
             if (folder.Id == Guid.Empty) folder.Id = Guid.NewGuid();
-            
+
+            // Calculate reference cores once per folder
+            var refCores = GetReferenceCores(folder.Path);
+
             foreach (var job in folder.Jobs)
             {
                 if (job.Id == Guid.Empty)
@@ -483,13 +537,22 @@ public class MainViewModel : ObservableObject
                     job.Name = Path.GetFileName(job.BatPath);
                 }
 
-                if (File.Exists(job.BatPath))
+                // FIX: Use reference cores if available
+                if (refCores > 1)
                 {
-                    job.RequiredCores = BatchFileParser.GetRequiredCores(job.BatPath);
+                    job.RequiredCores = refCores;
                 }
-                else if (job.RequiredCores < 1)
+                else
                 {
-                    job.RequiredCores = 1;
+                    // Fallback to individual parsing if no run_mesh or run_mesh says 1
+                    if (File.Exists(job.BatPath))
+                    {
+                        job.RequiredCores = BatchFileParser.GetRequiredCores(job.BatPath);
+                    }
+                    else if (job.RequiredCores < 1)
+                    {
+                        job.RequiredCores = 1;
+                    }
                 }
 
                 if (job.AddedAt == default)
@@ -508,6 +571,23 @@ public class MainViewModel : ObservableObject
                 }
             }
         }
+    }
+
+    private static int GetReferenceCores(string folderPath)
+    {
+        try
+        {
+            var meshBat = Path.Combine(folderPath, "run_mesh.bat");
+            if (File.Exists(meshBat))
+            {
+                return BatchFileParser.GetRequiredCores(meshBat);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        return 1;
     }
 
     private void FoldersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
