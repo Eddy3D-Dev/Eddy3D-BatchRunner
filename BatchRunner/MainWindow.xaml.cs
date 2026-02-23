@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -117,8 +119,31 @@ public partial class MainWindow : Window
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             var files = (string[])(e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>());
-            // AddFolders handles both files and folders (if file, it takes dirname)
-            _viewModel.AddFolders(files);
+
+            var batchFiles = new List<string>();
+            var otherItems = new List<string>();
+
+            foreach (var file in files)
+            {
+                if (File.Exists(file) && Path.GetExtension(file).Equals(".bat", StringComparison.OrdinalIgnoreCase))
+                {
+                    batchFiles.Add(file);
+                }
+                else
+                {
+                    otherItems.Add(file);
+                }
+            }
+
+            if (batchFiles.Any())
+            {
+                _viewModel.AddBatchFiles(batchFiles);
+            }
+
+            if (otherItems.Any())
+            {
+                _viewModel.AddFolders(otherItems);
+            }
             return;
         }
 
