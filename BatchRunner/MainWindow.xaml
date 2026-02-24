@@ -106,7 +106,8 @@
                                             <ColumnDefinition Width="40" /> <!-- Spacer for scrollbar -->
                                         </Grid.ColumnDefinitions>
                                         
-                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80" />
+                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80"
+                                                   Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
                                         
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
@@ -124,8 +125,14 @@
                                               HeadersVisibility="Column"
                                               Margin="20,0,0,8">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"
-                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource DataGridCellTextStyle}">
+                                                        <Setter Property="Foreground" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
+                                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
                                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="180"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="60"
