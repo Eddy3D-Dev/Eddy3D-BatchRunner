@@ -6,6 +6,8 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <Color x:Key="AppBackgroundColor">#F4F6F8</Color>
         <Color x:Key="SurfaceColor">#FFFFFF</Color>

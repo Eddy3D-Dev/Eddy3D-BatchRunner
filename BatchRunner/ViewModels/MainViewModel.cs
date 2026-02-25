@@ -71,6 +71,8 @@ public class MainViewModel : ObservableObject
 
     public ObservableCollection<BatchFolder> Folders { get; }
 
+    public bool HasFolders => Folders.Count > 0;
+
     public AppSettings Settings { get; }
     
     public BatchFolder? SelectedFolder
@@ -611,6 +613,7 @@ public class MainViewModel : ObservableObject
         UpdateCoreCounts();
         SaveState();
         CommandManager.InvalidateRequerySuggested();
+        OnPropertyChanged(nameof(HasFolders));
     }
 
     private void HookFolder(BatchFolder folder)

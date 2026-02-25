@@ -88,13 +88,27 @@
                 AllowDrop="True"
                 Drop="FoldersList_Drop"
                 DragOver="FoldersList_DragOver">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl x:Name="FoldersListItemsControl"
-                              ItemsSource="{Binding Folders}"
-                              PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
-                              MouseMove="FoldersList_MouseMove">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:BatchFolder}">
+            <Grid>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{Binding HasFolders, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <TextBlock Text="No jobs queued"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,8" />
+                    <TextBlock Text="Drag and drop folders here or use the 'Add Folder' button to start"
+                               FontSize="14"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Visibility="{Binding HasFolders, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ItemsControl x:Name="FoldersListItemsControl"
+                                  ItemsSource="{Binding Folders}"
+                                  PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
+                                  MouseMove="FoldersList_MouseMove">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
                                       BorderThickness="0,0,0,1" BorderBrush="#20FFFFFF">
                                 <Expander.Header>
@@ -173,10 +187,11 @@
                                     </DataGrid>
                                 </Expander.Content>
                             </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Window>
