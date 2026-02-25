@@ -14,6 +14,10 @@
         MinWidth="900"
         Background="{StaticResource AppBackgroundBrush}"
         Closing="Window_Closing">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo ProgressState="{Binding TaskbarProgressState}"
+                         ProgressValue="{Binding TaskbarProgressValue}" />
+    </Window.TaskbarItemInfo>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
