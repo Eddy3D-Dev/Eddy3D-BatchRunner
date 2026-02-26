@@ -71,7 +71,8 @@
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
                         <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" 
-                                 VerticalAlignment="Center" Width="40" TextAlignment="Center" />
+                                 VerticalAlignment="Center" Width="40" TextAlignment="Center"
+                                 AutomationProperties.Name="Total CPU Cores" />
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
@@ -165,8 +166,19 @@
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="70"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Log" Binding="{Binding LogFileName}" Width="200"
-                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTemplateColumn Header="Log" Width="200">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Style="{StaticResource DataGridCellTextStyle}">
+                                                            <Hyperlink Command="{Binding DataContext.OpenLogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                       CommandParameter="{Binding LogPath}"
+                                                                       Foreground="{StaticResource AccentBrush}">
+                                                                <Run Text="{Binding LogFileName, Mode=OneWay}" />
+                                                            </Hyperlink>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
                                             <DataGridTemplateColumn Header="Actions" Width="160">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>

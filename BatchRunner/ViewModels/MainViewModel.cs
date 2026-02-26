@@ -9,6 +9,7 @@ using BatchRunner.Services;
 
 using System.Windows;
 using System.Windows.Shell;
+using System.Diagnostics;
 
 namespace BatchRunner.ViewModels;
 
@@ -60,6 +61,7 @@ public class MainViewModel : ObservableObject
         ExpandAllCommand = new RelayCommand(ExpandAll);
         CollapseAllCommand = new RelayCommand(CollapseAll);
         RemoveAllCommand = new RelayCommand(RemoveAll, CanRemoveAll);
+        OpenLogCommand = new RelayCommand(OpenLog, CanOpenLog);
 
         UpdateCoreCounts();
         SaveState();
@@ -175,6 +177,8 @@ public class MainViewModel : ObservableObject
     public ICommand CollapseAllCommand { get; }
 
     public ICommand RemoveAllCommand { get; }
+
+    public ICommand OpenLogCommand { get; }
     
     public bool AnyJobsRunning => Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Running));
 
@@ -903,5 +907,31 @@ public class MainViewModel : ObservableObject
     private bool CanRemoveAll(object? parameter)
     {
         return Folders.Any();
+    }
+
+    private void OpenLog(object? parameter)
+    {
+        if (parameter is string path && !string.IsNullOrWhiteSpace(path))
+        {
+            if (!File.Exists(path))
+            {
+                MessageBox.Show($"Log file not found: {path}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not open log file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private bool CanOpenLog(object? parameter)
+    {
+        return parameter is string path && !string.IsNullOrWhiteSpace(path);
     }
 }
