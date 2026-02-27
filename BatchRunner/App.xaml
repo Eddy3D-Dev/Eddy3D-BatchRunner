@@ -64,6 +64,10 @@
                                 <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
                                 <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
                             </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#DCEFEF" />
                                 <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
