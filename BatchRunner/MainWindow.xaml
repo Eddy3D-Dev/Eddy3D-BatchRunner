@@ -53,11 +53,13 @@
                 <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
                         ToolTip="Restart the selected job (or all jobs in the selected folder)" />
                 
-                <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
-                          IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
-                <CheckBox Content="Show job window" Margin="0,0,16,0"
-                          IsChecked="{Binding Settings.ShowConsoleWindow}" />
-                <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,0"
+                <CheckBox Content="Auto-_retry failed jobs (1x)" Margin="0,0,12,0"
+                          IsChecked="{Binding Settings.AutoRetryFailedJobs}"
+                          ToolTip="Automatically retry a failed job once before marking it as failed" />
+                <CheckBox Content="Show job _window" Margin="0,0,16,0"
+                          IsChecked="{Binding Settings.ShowConsoleWindow}"
+                          ToolTip="Show the console window for running jobs" />
+                <CheckBox Content="C_ompress &amp; Delete completed" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.CompressCompletedCases}"
                           ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
                 <Border Background="{StaticResource HeaderBackgroundBrush}"
@@ -72,7 +74,8 @@
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
                         <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" 
                                  VerticalAlignment="Center" Width="40" TextAlignment="Center"
-                                 AutomationProperties.Name="Total CPU Cores" />
+                                 AutomationProperties.Name="Total CPU Cores"
+                                 ToolTip="Maximum number of CPU cores to use for all concurrent jobs" />
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
