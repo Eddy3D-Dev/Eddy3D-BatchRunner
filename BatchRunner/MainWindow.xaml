@@ -14,6 +14,10 @@
         MinWidth="900"
         Background="{StaticResource AppBackgroundBrush}"
         Closing="Window_Closing">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo ProgressState="{Binding TaskbarProgressState}"
+                         ProgressValue="{Binding TaskbarProgressValue}" />
+    </Window.TaskbarItemInfo>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -31,7 +35,7 @@
             <WrapPanel VerticalAlignment="Center" ItemHeight="40">
                 <Button Content="Add Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
                         ToolTip="Import a folder containing batch files to the queue" />
-                <Button Content="Add .bat..." Margin="0,0,16,0" Click="AddJobs_Click"
+                <Button Content="Add *.bat" Margin="0,0,16,0" Click="AddJobs_Click"
                         ToolTip="Import individual .bat files to the queue" />
                 
                 <Button Content="Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
@@ -47,12 +51,14 @@
                 <Button Content="Cancel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
                         ToolTip="Stop the currently selected job" />
                 <Button Content="Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
-                        ToolTip="Restart the selected job (or all jobs in the selected folder)" />
+                        ToolTip="Restart the selected job (or all jobs in the selected folder)" Click="Button_Click" />
                 
                 <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
-                          IsChecked="{Binding Settings.AutoRetryFailedJobs}" />
+                          IsChecked="{Binding Settings.AutoRetryFailedJobs}"
+                          ToolTip="Automatically retry a failed job once before marking it as failed" />
                 <CheckBox Content="Show job window" Margin="0,0,16,0"
-                          IsChecked="{Binding Settings.ShowConsoleWindow}" />
+                          IsChecked="{Binding Settings.ShowConsoleWindow}"
+                          ToolTip="Show the console window for running jobs" />
                 <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.CompressCompletedCases}"
                           ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
@@ -67,7 +73,9 @@
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
                         <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" 
-                                 VerticalAlignment="Center" Width="40" TextAlignment="Center" />
+                                 VerticalAlignment="Center" Width="40" TextAlignment="Center"
+                                 AutomationProperties.Name="Total CPU Cores"
+                                 ToolTip="Maximum number of CPU cores to use for all concurrent jobs" />
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
@@ -88,13 +96,35 @@
                 AllowDrop="True"
                 Drop="FoldersList_Drop"
                 DragOver="FoldersList_DragOver">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl x:Name="FoldersListItemsControl"
-                              ItemsSource="{Binding Folders}"
-                              PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
-                              MouseMove="FoldersList_MouseMove">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:BatchFolder}">
+            <Grid>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{Binding HasFolders, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <TextBlock Text="No jobs queued"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}"
+                               HorizontalAlignment="Center" Margin="0,0,0,16" />
+                    <Button Content="Add Folders..."
+                            Click="AddFolder_Click"
+                            Padding="24,10"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Center"
+                            ToolTip="Import folders containing batch files to the queue"
+                            Margin="0,0,0,12" />
+                    <TextBlock Text="Or drag and drop folders here"
+                               FontSize="14"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Visibility="{Binding HasFolders, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ItemsControl x:Name="FoldersListItemsControl"
+                                  ItemsSource="{Binding Folders}"
+                                  PreviewMouseLeftButtonDown="FoldersList_PreviewMouseLeftButtonDown"
+                                  MouseMove="FoldersList_MouseMove">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
                                       BorderThickness="0,0,0,1" BorderBrush="#20FFFFFF">
                                 <Expander.Header>
@@ -106,7 +136,8 @@
                                             <ColumnDefinition Width="40" /> <!-- Spacer for scrollbar -->
                                         </Grid.ColumnDefinitions>
                                         
-                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80" />
+                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80"
+                                                   Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
                                         
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
@@ -124,8 +155,14 @@
                                               HeadersVisibility="Column"
                                               Margin="20,0,0,8">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"
-                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource DataGridCellTextStyle}">
+                                                        <Setter Property="Foreground" Value="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
+                                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
                                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" MinWidth="180"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="60"
@@ -140,8 +177,19 @@
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="70"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Log" Binding="{Binding LogFileName}" Width="200"
-                                                                ElementStyle="{StaticResource DataGridCellTextStyle}" />
+                                            <DataGridTemplateColumn Header="Log" Width="200">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Style="{StaticResource DataGridCellTextStyle}">
+                                                            <Hyperlink Command="{Binding DataContext.OpenLogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                       CommandParameter="{Binding LogPath}"
+                                                                       Foreground="{StaticResource AccentBrush}">
+                                                                <Run Text="{Binding LogFileName, Mode=OneWay}" />
+                                                            </Hyperlink>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
                                             <DataGridTemplateColumn Header="Actions" Width="160">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
@@ -166,10 +214,11 @@
                                     </DataGrid>
                                 </Expander.Content>
                             </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Window>

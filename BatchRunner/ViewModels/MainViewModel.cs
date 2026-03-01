@@ -8,6 +8,8 @@ using BatchRunner.Models;
 using BatchRunner.Services;
 
 using System.Windows;
+using System.Windows.Shell;
+using System.Diagnostics;
 
 namespace BatchRunner.ViewModels;
 
@@ -59,6 +61,7 @@ public class MainViewModel : ObservableObject
         ExpandAllCommand = new RelayCommand(ExpandAll);
         CollapseAllCommand = new RelayCommand(CollapseAll);
         RemoveAllCommand = new RelayCommand(RemoveAll, CanRemoveAll);
+        OpenLogCommand = new RelayCommand(OpenLog, CanOpenLog);
 
         UpdateCoreCounts();
         SaveState();
@@ -70,6 +73,8 @@ public class MainViewModel : ObservableObject
     }
 
     public ObservableCollection<BatchFolder> Folders { get; }
+
+    public bool HasFolders => Folders.Count > 0;
 
     public AppSettings Settings { get; }
     
@@ -109,6 +114,56 @@ public class MainViewModel : ObservableObject
 
     public int AvailableCores => _jobManager.AvailableCores;
 
+    private TaskbarItemProgressState _taskbarProgressState = TaskbarItemProgressState.None;
+    public TaskbarItemProgressState TaskbarProgressState
+    {
+        get => _taskbarProgressState;
+        set => SetProperty(ref _taskbarProgressState, value);
+    }
+
+    private double _taskbarProgressValue;
+    public double TaskbarProgressValue
+    {
+        get => _taskbarProgressValue;
+        set => SetProperty(ref _taskbarProgressValue, value);
+    }
+
+    private void UpdateTaskbarState()
+    {
+        var allJobs = Folders.SelectMany(f => f.Jobs).ToList();
+        var total = allJobs.Count;
+
+        if (total == 0)
+        {
+            TaskbarProgressState = TaskbarItemProgressState.None;
+            TaskbarProgressValue = 0;
+            return;
+        }
+
+        var completed = allJobs.Count(j => j.Status == JobStatus.Completed);
+        var running = allJobs.Count(j => j.Status == JobStatus.Running);
+        var failed = allJobs.Count(j => j.Status == JobStatus.Failed);
+
+        TaskbarProgressValue = (double)completed / total;
+
+        if (running > 0)
+        {
+            TaskbarProgressState = TaskbarItemProgressState.Normal;
+        }
+        else if (failed > 0)
+        {
+            TaskbarProgressState = TaskbarItemProgressState.Error;
+        }
+        else if (completed < total)
+        {
+            TaskbarProgressState = TaskbarItemProgressState.Paused;
+        }
+        else
+        {
+            TaskbarProgressState = TaskbarItemProgressState.None;
+        }
+    }
+
     public ICommand RemoveFolderCommand { get; }
 
     public ICommand CancelJobCommand { get; }
@@ -122,6 +177,8 @@ public class MainViewModel : ObservableObject
     public ICommand CollapseAllCommand { get; }
 
     public ICommand RemoveAllCommand { get; }
+
+    public ICommand OpenLogCommand { get; }
     
     public bool AnyJobsRunning => Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Running));
 
@@ -571,6 +628,7 @@ public class MainViewModel : ObservableObject
                 }
             }
         }
+        UpdateTaskbarState();
     }
 
     private static int GetReferenceCores(string folderPath)
@@ -609,8 +667,10 @@ public class MainViewModel : ObservableObject
         }
 
         UpdateCoreCounts();
+        UpdateTaskbarState();
         SaveState();
         CommandManager.InvalidateRequerySuggested();
+        OnPropertyChanged(nameof(HasFolders));
     }
 
     private void HookFolder(BatchFolder folder)
@@ -657,6 +717,7 @@ public class MainViewModel : ObservableObject
             }
         }
         UpdateCoreCounts();
+        UpdateTaskbarState();
         SaveState();
         CommandManager.InvalidateRequerySuggested();
     }
@@ -674,6 +735,7 @@ public class MainViewModel : ObservableObject
     private void JobOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         UpdateCoreCounts();
+        UpdateTaskbarState();
         SaveState();
         CommandManager.InvalidateRequerySuggested();
     }
@@ -845,5 +907,31 @@ public class MainViewModel : ObservableObject
     private bool CanRemoveAll(object? parameter)
     {
         return Folders.Any();
+    }
+
+    private void OpenLog(object? parameter)
+    {
+        if (parameter is string path && !string.IsNullOrWhiteSpace(path))
+        {
+            if (!File.Exists(path))
+            {
+                MessageBox.Show($"Log file not found: {path}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not open log file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private bool CanOpenLog(object? parameter)
+    {
+        return parameter is string path && !string.IsNullOrWhiteSpace(path);
     }
 }
