@@ -17,3 +17,6 @@
 ## 2026-02-27 - Consistent Keyboard Navigation and Tooltips in WPF Settings
 **Learning:** While primary action buttons often have access keys (mnemonics), settings checkboxes and input fields are frequently missed. Adding access keys and descriptive tooltips to all interactive elements ensures complete keyboard navigation and improves clarity for users who prefer shortcuts.
 **Action:** Consistently apply access keys (via `_`) and `ToolTip` properties to all interactive `CheckBox` and `TextBox` elements in WPF dialogs or settings areas.
+## 2026-03-01 - [Actionable Empty State]
+**Learning:** Users benefit significantly from having direct, actionable CTA buttons within an empty state instead of just text directing them to use a button elsewhere. By embedding an "Add Folders..." button directly in the empty queue view, we reduce friction and improve onboarding flow.
+**Action:** Whenever designing or improving empty states, always include the primary action(s) directly within the empty view rather than just descriptive text.
