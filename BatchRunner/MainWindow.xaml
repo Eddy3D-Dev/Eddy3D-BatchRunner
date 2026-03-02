@@ -33,33 +33,33 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center" ItemHeight="40">
-                <Button Content="_Add Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
+                <Button Content="Add Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
                         ToolTip="Import a folder containing batch files to the queue" />
-                <Button Content="Add *._bat" Margin="0,0,16,0" Click="AddJobs_Click"
+                <Button Content="Add *.bat" Margin="0,0,16,0" Click="AddJobs_Click"
                         ToolTip="Import individual .bat files to the queue" />
                 
-                <Button Content="E_xpand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
+                <Button Content="Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
                         ToolTip="Expand all folder groups in the list" />
-                <Button Content="_Collapse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
+                <Button Content="Collapse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
                         ToolTip="Collapse all folder groups in the list" />
-                <Button Content="Re_move All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
+                <Button Content="Remove All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
                         ToolTip="Clear the entire queue" />
                 
-                <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
+                <Button Content="Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
                         ToolTip="Begin processing the queued jobs" />
                 
-                <Button Content="Cancel _Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
+                <Button Content="Cancel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
                         ToolTip="Stop the currently selected job" />
-                <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
+                <Button Content="Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
                         ToolTip="Restart the selected job (or all jobs in the selected folder)" Click="Button_Click" />
                 
-                <CheckBox Content="A_uto-retry failed jobs (1x)" Margin="0,0,12,0"
+                <CheckBox Content="Auto-retry failed jobs (1x)" Margin="0,0,12,0"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}"
                           ToolTip="Automatically retry a failed job once before marking it as failed" />
-                <CheckBox Content="S_how job window" Margin="0,0,16,0"
+                <CheckBox Content="Show job window" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.ShowConsoleWindow}"
                           ToolTip="Show the console window for running jobs" />
-                <CheckBox Content="Com_press &amp; Delete completed" Margin="0,0,16,0"
+                <CheckBox Content="Compress &amp; Delete completed" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.CompressCompletedCases}"
                           ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
                 <Border Background="{StaticResource HeaderBackgroundBrush}"
@@ -69,10 +69,10 @@
                         Padding="10,4"
                         Margin="0,0,0,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Label Content="C_ores:" Target="{Binding ElementName=CoresTextBox}" VerticalAlignment="Center" Margin="0,0,4,0" Padding="0" />
+                        <TextBlock Text="Cores:" VerticalAlignment="Center" Margin="0,0,4,0" />
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
-                        <TextBox x:Name="CoresTextBox" Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                        <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                  VerticalAlignment="Center" Width="40" TextAlignment="Center"
                                  AutomationProperties.Name="Total CPU Cores"
                                  ToolTip="Maximum number of CPU cores to use for all concurrent jobs" />
@@ -81,7 +81,7 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button Content="_Visualise Results" Margin="16,0,0,0" Click="VisualizeResults_Click"
+                <Button Content="Visualise Results" Margin="16,0,0,0" Click="VisualizeResults_Click"
                         ToolTip="Open the Eddy3D Visualizer in your browser" />
             </WrapPanel>
         </Border>
@@ -103,7 +103,7 @@
                                FontSize="18" FontWeight="SemiBold"
                                Foreground="{StaticResource TextBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,16" />
-                    <Button Content="_Add Folders..."
+                    <Button Content="Add Folders..."
                             Click="AddFolder_Click"
                             Padding="24,10"
                             FontSize="14"
@@ -140,7 +140,7 @@
                                                    Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
                                         
-                                        <Button Grid.Column="2" Content="Re_move" Padding="8,2" Margin="0,0,10,0"
+                                        <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
                                                 ToolTip="Remove this folder from the queue" />
@@ -194,13 +194,13 @@
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                            <Button Content="_Cancel" Margin="4,4"
+                                                            <Button Content="Cancel" Margin="4,4"
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding}"
                                                                     ToolTip="Stop this job" />
-                                                            <Button Content="R_estart" Margin="4,4"
+                                                            <Button Content="Restart" Margin="4,4"
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
