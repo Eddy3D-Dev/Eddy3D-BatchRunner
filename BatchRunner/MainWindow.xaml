@@ -69,10 +69,10 @@
                         Padding="10,4"
                         Margin="0,0,0,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Cores:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <Label Content="Cores:" Target="{Binding ElementName=CoresTextBox}" VerticalAlignment="Center" Margin="0,0,4,0" Padding="0" Foreground="{StaticResource TextBrush}" />
                         <TextBlock Text="{Binding UsedCores}" VerticalAlignment="Center" FontWeight="SemiBold" />
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
-                        <TextBox Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+                        <TextBox x:Name="CoresTextBox" Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                  VerticalAlignment="Center" Width="40" TextAlignment="Center"
                                  AutomationProperties.Name="Total CPU Cores"
                                  ToolTip="Maximum number of CPU cores to use for all concurrent jobs" />
