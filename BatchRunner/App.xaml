@@ -83,6 +83,7 @@
 
         <Style TargetType="{x:Type CheckBox}">
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
 
         <Style TargetType="{x:Type DataGrid}">
