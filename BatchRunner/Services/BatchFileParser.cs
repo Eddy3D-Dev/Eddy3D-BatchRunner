@@ -34,11 +34,15 @@ public static class BatchFileParser
                 continue;
             }
 
-            foreach (Match match in NpRegex.Matches(line))
+            // Fast preliminary check to avoid Regex overhead on most lines
+            if (line.IndexOf("-n", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                if (match.Groups[1].Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed > cores)
+                foreach (Match match in NpRegex.Matches(line))
                 {
-                    cores = parsed;
+                    if (match.Groups[1].Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed > cores)
+                    {
+                        cores = parsed;
+                    }
                 }
             }
         }
