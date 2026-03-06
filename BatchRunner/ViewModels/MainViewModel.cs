@@ -734,6 +734,12 @@ public class MainViewModel : ObservableObject
 
     private void JobOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        // Avoid redundant state-saving operations for high-frequency, calculated updates (e.g., from MonitorTimerOnTick)
+        if (e.PropertyName == nameof(BatchJob.Duration))
+        {
+            return;
+        }
+
         UpdateCoreCounts();
         UpdateTaskbarState();
         SaveState();
