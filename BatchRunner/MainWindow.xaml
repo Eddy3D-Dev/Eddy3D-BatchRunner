@@ -33,24 +33,24 @@
                 Padding="12"
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center" ItemHeight="40">
-                <Button Content="Add Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
+                <Button Content="Add _Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
                         ToolTip="Import a folder containing batch files to the queue" />
-                <Button Content="Add *.bat" Margin="0,0,16,0" Click="AddJobs_Click"
+                <Button Content="Add *._bat" Margin="0,0,16,0" Click="AddJobs_Click"
                         ToolTip="Import individual .bat files to the queue" />
                 
-                <Button Content="Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
+                <Button Content="_Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
                         ToolTip="Expand all folder groups in the list" />
-                <Button Content="Collapse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
+                <Button Content="C_ollapse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
                         ToolTip="Collapse all folder groups in the list" />
-                <Button Content="Remove All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
+                <Button Content="Remo_ve All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
                         ToolTip="Clear the entire queue" />
                 
-                <Button Content="Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
+                <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
                         ToolTip="Begin processing the queued jobs" />
                 
-                <Button Content="Cancel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
+                <Button Content="_Cancel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
                         ToolTip="Stop the currently selected job" />
-                <Button Content="Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
+                <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
                         ToolTip="Restart the selected job (or all jobs in the selected folder)" Click="Button_Click" />
                 
                 <CheckBox Content="_Auto-retry failed jobs (1x)" Margin="0,0,12,0"
@@ -81,7 +81,7 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button Content="Visualise Results" Margin="16,0,0,0" Click="VisualizeResults_Click"
+                <Button Content="V_isualise Results" Margin="16,0,0,0" Click="VisualizeResults_Click"
                         ToolTip="Open the Eddy3D Visualizer in your browser" />
             </WrapPanel>
         </Border>
@@ -103,7 +103,7 @@
                                FontSize="18" FontWeight="SemiBold"
                                Foreground="{StaticResource TextBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,16" />
-                    <Button Content="Add Folders..."
+                    <Button Content="Add _Folders..."
                             Click="AddFolder_Click"
                             Padding="24,10"
                             FontSize="14"

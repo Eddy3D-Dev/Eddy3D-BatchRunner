@@ -20,3 +20,7 @@
 ## 2026-03-01 - [Actionable Empty State]
 **Learning:** Users benefit significantly from having direct, actionable CTA buttons within an empty state instead of just text directing them to use a button elsewhere. By embedding an "Add Folders..." button directly in the empty queue view, we reduce friction and improve onboarding flow.
 **Action:** Whenever designing or improving empty states, always include the primary action(s) directly within the empty view rather than just descriptive text.
+
+## 2026-03-02 - Complete Keyboard Navigation Mnemonic Coverage
+**Learning:** Providing access keys (mnemonics) only for settings or text fields is insufficient. Power users rely heavily on keyboard shortcuts for primary interactions on main application toolbars. Failing to include mnemonics on primary application buttons prevents a fully keyboard-accessible workflow.
+**Action:** When auditing or implementing keyboard accessibility, guarantee that every main toolbar action button and empty state CTA includes an assigned access key prefix (`_`) without conflicting with others.
