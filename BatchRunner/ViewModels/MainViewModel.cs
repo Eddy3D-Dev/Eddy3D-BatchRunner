@@ -20,6 +20,7 @@ public class MainViewModel : ObservableObject
     private readonly Dispatcher _dispatcher;
     private BatchFolder? _selectedFolder;
     private BatchJob? _selectedJob;
+    private readonly DispatcherTimer _saveStateTimer;
 
     public MainViewModel()
     {
@@ -64,6 +65,14 @@ public class MainViewModel : ObservableObject
         OpenLogCommand = new RelayCommand(OpenLog, CanOpenLog);
 
         UpdateCoreCounts();
+
+        // ⚡ Bolt: Debounce state saving to prevent blocking the UI thread on high-frequency property changes
+        _saveStateTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+        {
+            Interval = TimeSpan.FromMilliseconds(500)
+        };
+        _saveStateTimer.Tick += (s, e) => ExecuteSaveState();
+
         SaveState();
 
         _jobManager.QueueFinished += () => 
@@ -762,6 +771,23 @@ public class MainViewModel : ObservableObject
 
     private void SaveState()
     {
+        // ⚡ Bolt: Reset the timer to delay the actual save operation
+        _saveStateTimer.Stop();
+        _saveStateTimer.Start();
+    }
+
+    public void FlushState()
+    {
+        if (_saveStateTimer.IsEnabled)
+        {
+            ExecuteSaveState();
+        }
+    }
+
+    private void ExecuteSaveState()
+    {
+        _saveStateTimer.Stop();
+
         var snapshot = new RunnerState
         {
             Folders = Folders.ToList(),
