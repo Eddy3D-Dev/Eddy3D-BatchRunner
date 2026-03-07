@@ -24,3 +24,6 @@
 ## 2026-03-02 - Complete Keyboard Navigation Mnemonic Coverage
 **Learning:** Providing access keys (mnemonics) only for settings or text fields is insufficient. Power users rely heavily on keyboard shortcuts for primary interactions on main application toolbars. Failing to include mnemonics on primary application buttons prevents a fully keyboard-accessible workflow.
 **Action:** When auditing or implementing keyboard accessibility, guarantee that every main toolbar action button and empty state CTA includes an assigned access key prefix (`_`) without conflicting with others.
+## 2026-03-03 - Prevent WPF Access Key Collisions
+**Learning:** Assigning access keys (mnemonics prefixed with `_`) without checking for existing ones can lead to focus-cycling instead of action-triggering, creating a frustrating experience for keyboard users.
+**Action:** Always verify access key uniqueness across the entire visible window, not just the local component or menu, to ensure direct action execution.
