@@ -208,6 +208,10 @@ public partial class MainWindow : Window
         {
             e.Cancel = true;
         }
+        else
+        {
+            _viewModel.FlushState();
+        }
     }
 
     private void Button_Click(object sender, RoutedEventArgs e)
