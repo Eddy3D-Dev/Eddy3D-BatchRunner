@@ -918,6 +918,12 @@ public class MainViewModel : ObservableObject
 
     private void RemoveAll(object? parameter)
     {
+        var result = MessageBox.Show("Are you sure you want to remove all folders? This will cancel all running jobs.", "Confirm Remove All", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
         // Must convert to list because we are modifying collection
         var foldersCopy = Folders.ToList();
         
