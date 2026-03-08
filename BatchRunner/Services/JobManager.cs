@@ -60,48 +60,51 @@ public class JobManager : IDisposable
         }
     }
 
+    // ⚡ Bolt: Cache target process names in a HashSet for O(1) lookups
+    private static readonly HashSet<string> TargetProcessNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "simpleFoam",
+        "blockMesh",
+        "snappyHexMesh",
+        "decomposePar",
+        "reconstructPar",
+        "mpiexec", // MS-MPI
+        "mpirun"   // OpenMPI
+    };
+
     private void EnforceHighPriority()
     {
-        // Target specific OpenFOAM/CFD processes
-        var targetNames = new[] 
-        { 
-            "simpleFoam", 
-            "blockMesh", 
-            "snappyHexMesh", 
-            "decomposePar", 
-            "reconstructPar",
-            "mpiexec", // MS-MPI
-            "mpirun"   // OpenMPI
-        };
-
-        foreach (var name in targetNames)
+        try
         {
-            try
+            // ⚡ Bolt: Call GetProcesses() once instead of GetProcessesByName() 7 times
+            // This reduces OS process list scans from O(N) to O(1) per watchdog tick.
+            var processes = Process.GetProcesses();
+            foreach (var p in processes)
             {
-                var processes = Process.GetProcessesByName(name);
-                foreach (var p in processes)
+                try
                 {
-                    try
+                    if (TargetProcessNames.Contains(p.ProcessName))
                     {
                         if (!p.HasExited && p.PriorityClass != ProcessPriorityClass.High)
                         {
                             p.PriorityClass = ProcessPriorityClass.High;
                         }
                     }
-                    catch
-                    {
-                        // Ignore access denied etc.
-                    }
-                    finally
-                    {
-                        p.Dispose();
-                    }
+                }
+                catch
+                {
+                    // Ignore access denied etc.
+                }
+                finally
+                {
+                    // Ensure process handles are disposed to prevent memory leaks
+                    p.Dispose();
                 }
             }
-            catch
-            {
-                // Ignore general errors
-            }
+        }
+        catch
+        {
+            // Ignore general errors
         }
     }
 
