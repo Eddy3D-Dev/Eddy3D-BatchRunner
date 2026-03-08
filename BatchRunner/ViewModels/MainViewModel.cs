@@ -817,6 +817,12 @@ public class MainViewModel : ObservableObject
              return;
         }
 
+        var result = MessageBox.Show($"Are you sure you want to remove the folder '{folder.Name}'? This will cancel any running jobs in it.", "Confirm Remove Folder", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
         // Cancel running jobs in this folder
         foreach(var job in folder.Jobs)
         {
@@ -918,6 +924,12 @@ public class MainViewModel : ObservableObject
 
     private void RemoveAll(object? parameter)
     {
+        var result = MessageBox.Show("Are you sure you want to remove all folders? This will cancel all running jobs.", "Confirm Remove All", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
         // Must convert to list because we are modifying collection
         var foldersCopy = Folders.ToList();
         

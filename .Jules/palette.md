@@ -27,3 +27,7 @@
 ## 2026-03-03 - Prevent WPF Access Key Collisions
 **Learning:** Assigning access keys (mnemonics prefixed with `_`) without checking for existing ones can lead to focus-cycling instead of action-triggering, creating a frustrating experience for keyboard users.
 **Action:** Always verify access key uniqueness across the entire visible window, not just the local component or menu, to ensure direct action execution.
+
+## 2026-03-08 - Prevent accidental data loss with confirmation dialogs
+**Learning:** Users can accidentally click destructive actions like 'Remove All' or 'Remove Folder', which can immediately cancel running jobs and lose queue state without warning.
+**Action:** Add confirmation dialogs (`MessageBox`) for any destructive action that causes immediate, unrecoverable data loss or disrupts running processes.
