@@ -817,12 +817,6 @@ public class MainViewModel : ObservableObject
              return;
         }
 
-        var result = MessageBox.Show($"Are you sure you want to remove the folder '{folder.Name}'? This will cancel any running jobs in it.", "Confirm Remove Folder", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result != MessageBoxResult.Yes)
-        {
-            return;
-        }
-
         // Cancel running jobs in this folder
         foreach(var job in folder.Jobs)
         {
