@@ -31,3 +31,7 @@
 ## 2026-03-08 - Prevent accidental data loss with confirmation dialogs
 **Learning:** Users can accidentally click destructive actions like 'Remove All' or 'Remove Folder', which can immediately cancel running jobs and lose queue state without warning.
 **Action:** Add confirmation dialogs (`MessageBox`) for any destructive action that causes immediate, unrecoverable data loss or disrupts running processes.
+
+## 2026-03-09 - Contextual Screen Reader Labels in WPF Lists
+**Learning:** Repetitive buttons in lists (like "Remove", "Cancel", "Restart" inside a DataGrid or ItemsControl) are announced by screen readers without their associated item context, causing confusion (e.g., hearing "Remove button" 10 times).
+**Action:** Always use `AutomationProperties.Name` with a `StringFormat` binding to the item's context (e.g., `AutomationProperties.Name="{Binding Name, StringFormat='Remove {0}'}"`) for action buttons inside repeated list templates.
