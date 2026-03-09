@@ -5,3 +5,7 @@
 ## 2024-05-20 - Process Enumeration Optimization
 **Learning:** `Process.GetProcessesByName()` scans the entire OS process list. Calling it in a loop for `N` different target process names results in O(N) full system scans, which creates significant CPU overhead when run frequently on a timer (e.g., a background watchdog).
 **Action:** Replace multiple `GetProcessesByName()` calls with a single `Process.GetProcesses()` call. Iterate the resulting process array once and check `p.ProcessName` against a `HashSet<string>` (with `OrdinalIgnoreCase`). Always ensure the `Process` objects are disposed in a `finally` block to prevent handle/memory leaks.
+
+## 2024-11-20 - Replace File.ReadAllLines with File.ReadLines
+**Learning:** Large scripts, dictionary files, or log files can allocate significant arrays of strings when parsed with File.ReadAllLines, placing unnecessary pressure on the Garbage Collector.
+**Action:** Always prefer `File.ReadLines` when streaming/processing text files line-by-line where possible. This is especially true for tasks that might only need to read a small portion of a file before exiting the loop, or for tasks running periodically on background timers.
