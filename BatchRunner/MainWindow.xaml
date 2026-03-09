@@ -143,6 +143,7 @@
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
+                                                AutomationProperties.Name="{Binding Name, StringFormat='Remove folder {0}'}"
                                                 ToolTip="Remove this folder from the queue" />
                                     </Grid>
                                 </Expander.Header>
@@ -199,12 +200,14 @@
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding}"
+                                                                    AutomationProperties.Name="{Binding Name, StringFormat='Cancel job {0}'}"
                                                                     ToolTip="Stop this job" />
                                                             <Button Content="Restart" Margin="4,4"
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding}"
+                                                                    AutomationProperties.Name="{Binding Name, StringFormat='Restart job {0}'}"
                                                                     ToolTip="Restart this job" />
                                                         </StackPanel>
                                                     </DataTemplate>
