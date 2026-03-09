@@ -15,36 +15,37 @@ public static class BatchFileParser
         }
 
         var cores = 1;
-        string[] lines;
 
         try
         {
-            lines = File.ReadAllLines(batPath);
+            // ⚡ Bolt: Use File.ReadLines() instead of File.ReadAllLines()
+            // File.ReadAllLines loads the entire file into an array of strings in memory.
+            // File.ReadLines returns an IEnumerable<string> and reads lines lazily.
+            // This prevents unnecessary memory allocation, especially for large script files.
+            foreach (var line in File.ReadLines(batPath))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("REM", StringComparison.OrdinalIgnoreCase) || trimmed.StartsWith("::"))
+                {
+                    continue;
+                }
+
+                // Fast preliminary check to avoid Regex overhead on most lines
+                if (line.IndexOf("-n", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    foreach (Match match in NpRegex.Matches(line))
+                    {
+                        if (match.Groups[1].Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed > cores)
+                        {
+                            cores = parsed;
+                        }
+                    }
+                }
+            }
         }
         catch
         {
             return 1;
-        }
-
-        foreach (var line in lines)
-        {
-            var trimmed = line.Trim();
-            if (trimmed.StartsWith("REM", StringComparison.OrdinalIgnoreCase) || trimmed.StartsWith("::"))
-            {
-                continue;
-            }
-
-            // Fast preliminary check to avoid Regex overhead on most lines
-            if (line.IndexOf("-n", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                foreach (Match match in NpRegex.Matches(line))
-                {
-                    if (match.Groups[1].Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed > cores)
-                    {
-                        cores = parsed;
-                    }
-                }
-            }
         }
 
         // Always check system/decomposeParDict and take the max value.
