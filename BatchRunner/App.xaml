@@ -35,6 +35,7 @@
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
         </Style>
 
         <Style TargetType="{x:Type TextBlock}">
