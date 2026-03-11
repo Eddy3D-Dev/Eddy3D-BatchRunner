@@ -14,7 +14,9 @@ public class JobManager : IDisposable
     private const int AutoRetryLimit = 1;
     private readonly ObservableCollection<BatchFolder> _folders;
     private readonly Dispatcher _dispatcher;
-    private readonly Dictionary<Guid, Process> _running = new();
+
+    // ⚡ Bolt: Store the BatchJob alongside the Process to avoid O(N) queue enumerations
+    private readonly Dictionary<Guid, (BatchJob Job, Process Process)> _running = new();
     private readonly HashSet<Guid> _cancelRequested = new();
     private readonly HashSet<Guid> _restartRequested = new();
     private readonly string _logRoot;
@@ -40,15 +42,10 @@ public class JobManager : IDisposable
     private void MonitorTimerOnTick(object? sender, EventArgs e)
     {
         // 1. Update Duration for running jobs
-        foreach (var folder in _folders)
+        // ⚡ Bolt: Iterate only O(R) running jobs instead of O(N) all jobs across all folders
+        foreach (var tuple in _running.Values)
         {
-            foreach (var job in folder.Jobs)
-            {
-                if (job.Status == JobStatus.Running)
-                {
-                    job.RefreshDuration();
-                }
-            }
+            tuple.Job.RefreshDuration();
         }
 
         // 2. Process Watchdog (every 5 seconds)
@@ -118,7 +115,8 @@ public class JobManager : IDisposable
 
     public bool IsQueueRunning { get; private set; }
 
-    public int UsedCores => _folders.SelectMany(f => f.Jobs).Where(job => job.Status == JobStatus.Running).Sum(job => job.RequiredCores);
+    // ⚡ Bolt: Compute UsedCores in O(R) running jobs instead of O(N) LINQ query across all folders and jobs
+    public int UsedCores => _running.Values.Sum(v => v.Job.RequiredCores);
 
     public int AvailableCores => Math.Max(0, TotalCores - UsedCores);
 
@@ -232,9 +230,9 @@ public class JobManager : IDisposable
         if (job.Status == JobStatus.Running)
         {
             _cancelRequested.Add(job.Id);
-            if (_running.TryGetValue(job.Id, out var process))
+            if (_running.TryGetValue(job.Id, out var tuple))
             {
-                TryKillProcess(process);
+                TryKillProcess(tuple.Process);
             }
         }
         else if (job.Status == JobStatus.Queued)
@@ -318,7 +316,7 @@ public class JobManager : IDisposable
             {
                 // Ignore if unable to set priority (e.g. permissions)
             }
-            _running[job.Id] = process;
+            _running[job.Id] = (job, process);
         }
         catch (Exception ex)
         {
@@ -627,9 +625,9 @@ public class JobManager : IDisposable
 
     public void Dispose()
     {
-        foreach (var process in _running.Values)
+        foreach (var tuple in _running.Values)
         {
-            TryKillProcess(process);
+            TryKillProcess(tuple.Process);
         }
         _monitorTimer.Stop();
     }
