@@ -103,15 +103,22 @@
                                FontSize="18" FontWeight="SemiBold"
                                Foreground="{StaticResource TextBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,16" />
-                    <Button Content="Add Fo_lders..."
-                            Click="AddFolder_Click"
-                            Padding="24,10"
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            HorizontalAlignment="Center"
-                            ToolTip="Import folders containing batch files to the queue"
-                            Margin="0,0,0,12" />
-                    <TextBlock Text="Or drag and drop folders here"
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                        <Button Content="Add Fo_lders..."
+                                Click="AddFolder_Click"
+                                Padding="24,10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                ToolTip="Import folders containing batch files to the queue"
+                                Margin="0,0,8,0" />
+                        <Button Content="Add *._bat Files"
+                                Click="AddJobs_Click"
+                                Padding="24,10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                ToolTip="Import individual .bat files to the queue" />
+                    </StackPanel>
+                    <TextBlock Text="Or drag and drop folders or .bat files here"
                                FontSize="14"
                                Foreground="{StaticResource MutedTextBrush}"
                                HorizontalAlignment="Center" />
