@@ -13,3 +13,7 @@
 ## 2026-03-08 - [Avoid O(N) LINQ in UI Timers]
 **Learning:** In applications with a large queue of items (like jobs in folders), executing LINQ operations like `SelectMany` + `Where` + `Sum` on every timer tick (e.g. 1-second background refresh) creates an O(N) performance bottleneck and continuous GC allocations.
 **Action:** Always prefer caching the active/running subset of items in a dictionary or list, so that high-frequency background timers and property getters run in O(R) time (where R is the small subset of running items).
+
+## 2026-03-08 - [Avoid Multiple O(N) Passes for Aggregation]
+**Learning:** Extracting counts (`.Count()`) sequentially using LINQ predicates causes multiple O(N) enumerations over a collection. Additionally, `.ToList()` allocations for local lists that are just counted adds memory overhead.
+**Action:** Use a single loop to compute multiple aggregates, avoiding extra memory allocation and optimizing iteration paths when dealing with high-frequency property changes updating UI components.

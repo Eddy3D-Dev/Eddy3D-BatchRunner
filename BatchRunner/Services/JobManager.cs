@@ -200,20 +200,24 @@ public class JobManager : IDisposable
             // If no jobs are running anywhere, AND no jobs are queued that could run...
             // Actually simpler: if no jobs are running, we are either done or stuck.
             
-            var anyRunning = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Running);
+            // ⚡ Bolt: Use O(1) Dictionary count check instead of O(N) LINQ SelectMany.Any
+            var anyRunning = _running.Count > 0;
             
-            // If nothing is running, and we have queued jobs, it might be that they don't fit in TotalCores?
-            // Or just that we finished everything.
-
-            var anyQueued = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Queued);
-
-            if (!anyRunning && !anyQueued)
+            if (!anyRunning)
             {
-                // All done
-                if (IsQueueRunning)
+                // ⚡ Bolt: Short-circuit checking for queued jobs if something is running, saving another O(N) pass.
+                // If nothing is running, and we have queued jobs, it might be that they don't fit in TotalCores?
+                // Or just that we finished everything.
+                var anyQueued = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Queued);
+
+                if (!anyQueued)
                 {
-                    IsQueueRunning = false;
-                    _dispatcher.Invoke(() => QueueFinished?.Invoke());
+                    // All done
+                    if (IsQueueRunning)
+                    {
+                        IsQueueRunning = false;
+                        _dispatcher.Invoke(() => QueueFinished?.Invoke());
+                    }
                 }
             }
         }
