@@ -213,9 +213,4 @@ public partial class MainWindow : Window
             _viewModel.FlushState();
         }
     }
-
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
 }

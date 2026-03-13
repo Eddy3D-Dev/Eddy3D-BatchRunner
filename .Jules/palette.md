@@ -39,3 +39,7 @@
 ## 2026-03-10 - Comprehensive Empty State CTAs
 **Learning:** Empty states should expose all primary methods of populating data, not just the most common one. Missing options in the empty state (like adding individual files instead of folders when both are supported) forces users to hunt for secondary toolbars, increasing friction.
 **Action:** When designing empty states with multiple data entry methods, include clear CTAs for all primary methods (e.g., both "Add Folders" and "Add Files") to ensure a seamless onboarding experience.
+
+## 2026-03-12 - Prevent Invisible Borders in Light Themes
+**Learning:** Hardcoded translucent white colors (e.g., `#20FFFFFF`) are a common leftover from dark-mode designs and become completely invisible in light-themed applications, destroying the intended visual hierarchy (e.g., separating list items).
+**Action:** Always use semantic design tokens (like `SurfaceBorderBrush`) rather than hardcoded hex opacities for structural borders.
