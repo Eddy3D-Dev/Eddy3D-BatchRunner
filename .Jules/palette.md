@@ -39,3 +39,9 @@
 ## 2026-03-10 - Comprehensive Empty State CTAs
 **Learning:** Empty states should expose all primary methods of populating data, not just the most common one. Missing options in the empty state (like adding individual files instead of folders when both are supported) forces users to hunt for secondary toolbars, increasing friction.
 **Action:** When designing empty states with multiple data entry methods, include clear CTAs for all primary methods (e.g., both "Add Folders" and "Add Files") to ensure a seamless onboarding experience.
+## 2026-03-14 - [Visibility of structural borders in light-themed apps]
+**Learning:** Hardcoded translucent colors (e.g., `#20FFFFFF`) for structural borders become invisible in light-themed applications, reducing the visual hierarchy and causing components to blend unintentionally.
+**Action:** Use semantic design tokens like `SurfaceBorderBrush` (or `SurfaceBorderColor`) to maintain correct contrast and visible boundaries regardless of the overall app theme.
+## 2026-03-14 - [Theme resource usage for structural borders]
+**Learning:** Theme brushes should almost always use `{DynamicResource ...}` in WPF/XAML rather than `{StaticResource ...}` so that the UI updates correctly if the user switches between light and dark themes at runtime. `StaticResource` evaluates only once upon initialization.
+**Action:** Use `{DynamicResource SurfaceBorderBrush}` (or similar theme resources) instead of `StaticResource` to maintain correct contrast and support dynamic theming.

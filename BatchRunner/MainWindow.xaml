@@ -133,7 +133,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
-                                      BorderThickness="0,0,0,1" BorderBrush="#20FFFFFF">
+                                      BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SurfaceBorderBrush}">
                                 <Expander.Header>
                                     <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}">
                                         <Grid.ColumnDefinitions>
