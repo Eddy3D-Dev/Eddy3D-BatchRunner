@@ -798,17 +798,32 @@ public class MainViewModel : ObservableObject
 
     public void FlushState()
     {
-        if (_saveStateTimer.IsEnabled)
+        // ⚡ Bolt: Always stop the timer and save synchronously on exit.
+        // This ensures any pending async saves complete (via SemaphoreSlim blocking)
+        // and the final state is written before the process terminates.
+        _saveStateTimer.Stop();
+        var snapshot = CreateSnapshot();
+        _stateStore.Save(snapshot);
+    }
+
+    private async void ExecuteSaveState()
+    {
+        _saveStateTimer.Stop();
+        var snapshot = CreateSnapshot();
+
+        try
         {
-            ExecuteSaveState();
+            await _stateStore.SaveAsync(snapshot);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to save state asynchronously: {ex.Message}");
         }
     }
 
-    private void ExecuteSaveState()
+    private RunnerState CreateSnapshot()
     {
-        _saveStateTimer.Stop();
-
-        var snapshot = new RunnerState
+        return new RunnerState
         {
             Folders = Folders.ToList(),
             Settings = new AppSettings
@@ -818,8 +833,6 @@ public class MainViewModel : ObservableObject
                 CompressCompletedCases = Settings.CompressCompletedCases
             }
         };
-
-        _stateStore.Save(snapshot);
     }
 
     private void RemoveFolder(object? parameter)
