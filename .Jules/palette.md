@@ -45,3 +45,7 @@
 ## 2026-03-14 - [Theme resource usage for structural borders]
 **Learning:** Theme brushes should almost always use `{DynamicResource ...}` in WPF/XAML rather than `{StaticResource ...}` so that the UI updates correctly if the user switches between light and dark themes at runtime. `StaticResource` evaluates only once upon initialization.
 **Action:** Use `{DynamicResource SurfaceBorderBrush}` (or similar theme resources) instead of `StaticResource` to maintain correct contrast and support dynamic theming.
+
+## 2026-03-16 - Avoid Mnemonic Access Key Collisions
+**Learning:** In WPF, providing access keys (`_`) in interactive elements is important for accessibility, but repeating them across completely identical actions in overlapping views (like an empty state versus a main toolbar) creates unintended focus-cycling collisions. In this app, the `Add *._bat Files` button in the empty state shared the `Alt+B` mnemonic with the `Add *._bat` button in the persistent main toolbar, causing Alt+B to require multiple keypresses instead of immediately activating the action.
+**Action:** When adding call-to-actions in temporary empty states that duplicate persistent actions (like a toolbar), prefer removing the access key in the empty state entirely to preserve a single, globally-unique hotkey mapping that correctly and immediately invokes the command.
