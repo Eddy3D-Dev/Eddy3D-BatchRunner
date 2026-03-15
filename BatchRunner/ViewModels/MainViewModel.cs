@@ -800,15 +800,20 @@ public class MainViewModel : ObservableObject
     {
         if (_saveStateTimer.IsEnabled)
         {
-            ExecuteSaveState();
+            _saveStateTimer.Stop();
+            _stateStore.SaveSync(CreateSnapshot());
         }
     }
 
     private void ExecuteSaveState()
     {
         _saveStateTimer.Stop();
+        _ = _stateStore.SaveAsync(CreateSnapshot());
+    }
 
-        var snapshot = new RunnerState
+    private RunnerState CreateSnapshot()
+    {
+        return new RunnerState
         {
             Folders = Folders.ToList(),
             Settings = new AppSettings
@@ -818,8 +823,6 @@ public class MainViewModel : ObservableObject
                 CompressCompletedCases = Settings.CompressCompletedCases
             }
         };
-
-        _stateStore.Save(snapshot);
     }
 
     private void RemoveFolder(object? parameter)

@@ -17,3 +17,7 @@
 ## 2026-03-08 - [Avoid Multiple O(N) Passes for Aggregation]
 **Learning:** Extracting counts (`.Count()`) sequentially using LINQ predicates causes multiple O(N) enumerations over a collection. Additionally, `.ToList()` allocations for local lists that are just counted adds memory overhead.
 **Action:** Use a single loop to compute multiple aggregates, avoiding extra memory allocation and optimizing iteration paths when dealing with high-frequency property changes updating UI components.
+
+## 2024-06-25 - [Async State Serialization Thread Safety]
+**Learning:** Offloading state persistence to `File.WriteAllTextAsync` via `Task.Run` improves UI responsiveness, but if the state relies on UI components like `ObservableCollection`, serializing inside the background task will throw an `InvalidOperationException` due to concurrent UI updates.
+**Action:** Serialize the state synchronously on the UI thread to freeze the snapshot, then offload only the disk write (`File.WriteAllTextAsync`) to a background task using `SemaphoreSlim` for synchronization. Also, retain a synchronous save fallback for application shutdown to ensure completion.
