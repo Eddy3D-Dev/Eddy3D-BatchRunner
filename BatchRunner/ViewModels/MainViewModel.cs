@@ -800,11 +800,11 @@ public class MainViewModel : ObservableObject
     {
         if (_saveStateTimer.IsEnabled)
         {
-            ExecuteSaveState();
+            ExecuteSaveState(sync: true);
         }
     }
 
-    private void ExecuteSaveState()
+    private void ExecuteSaveState(bool sync = false)
     {
         _saveStateTimer.Stop();
 
@@ -819,7 +819,7 @@ public class MainViewModel : ObservableObject
             }
         };
 
-        _stateStore.Save(snapshot);
+        _stateStore.Save(snapshot, sync);
     }
 
     private void RemoveFolder(object? parameter)
