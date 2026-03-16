@@ -45,3 +45,6 @@
 ## 2026-03-14 - [Theme resource usage for structural borders]
 **Learning:** Theme brushes should almost always use `{DynamicResource ...}` in WPF/XAML rather than `{StaticResource ...}` so that the UI updates correctly if the user switches between light and dark themes at runtime. `StaticResource` evaluates only once upon initialization.
 **Action:** Use `{DynamicResource SurfaceBorderBrush}` (or similar theme resources) instead of `StaticResource` to maintain correct contrast and support dynamic theming.
+## 2026-03-16 - Unique Access Keys in Empty States
+**Learning:** When assigning access keys (mnemonics) in WPF views, keybindings must be unique across the entire window. Empty state views that duplicate persistent actions (like a main toolbar) should omit access keys on the temporary buttons to preserve the global hotkey mapping and prevent focus-cycling collisions.
+**Action:** Remove access keys from temporary or duplicate action buttons in empty state views.
