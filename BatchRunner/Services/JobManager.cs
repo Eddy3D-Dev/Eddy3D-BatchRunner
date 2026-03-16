@@ -153,47 +153,50 @@ public class JobManager : IDisposable
 
             foreach (var folder in _folders)
             {
-                // 1. Strict sequential per folder: If any job is running in this folder, skip it.
-                if (folder.Jobs.Any(j => j.Status == JobStatus.Running))
+                // ⚡ Bolt: Single O(N) pass to find the state of the folder
+                // This replaces multiple sequential LINQ allocations (.Any(), .FirstOrDefault(), .IndexOf(), .Take().Any())
+                bool isBlocked = false;
+                BatchJob? nextJob = null;
+                
+                for (int i = 0; i < folder.Jobs.Count; i++)
                 {
-                    continue; 
+                    var j = folder.Jobs[i];
+                    if (j.Status == JobStatus.Running || j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled)
+                    {
+                        isBlocked = true;
+                        break;
+                    }
+
+                    if (nextJob == null)
+                    {
+                        if (j.Status == JobStatus.Queued)
+                        {
+                            nextJob = j;
+                        }
+                        else if (j.Status != JobStatus.Completed)
+                        {
+                            // A previous job is in a weird state (not running, failed, cancelled, queued, or completed)
+                            isBlocked = true;
+                            break;
+                        }
+                    }
                 }
 
-                // 2. Check if this folder has failed/cancelled jobs -> Effectively "Done" (Stopped).
-                if (folder.Jobs.Any(j => j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled))
+                if (isBlocked || nextJob == null)
                 {
-                    // This folder is dead. Move to next folder.
                     continue;
                 }
 
-                // 3. Find next queued job
-                var nextJob = folder.Jobs.FirstOrDefault(j => j.Status == JobStatus.Queued);
-                
-                if (nextJob != null)
+                // Check resources
+                if (nextJob.RequiredCores > AvailableCores)
                 {
-                    // 4. Ensure all prior jobs in this folder are Completed
-                    var index = folder.Jobs.IndexOf(nextJob);
-                    var previousJobs = folder.Jobs.Take(index);
-                    if (previousJobs.Any(j => j.Status != JobStatus.Completed))
-                    {
-                         // Blocked by a previous job that's not 'Completed' (though we checked Failed above)
-                         // e.g. maybe some weird state. Just skip.
-                        continue;
-                    }
-
-                    // 5. Check resources
-                    if (nextJob.RequiredCores > AvailableCores)
-                    {
-                        // Not enough cores for this specific job right now.
-                        // Skip this folder, try next folder (maybe it has a smaller job).
-                        continue; 
-                    }
-
-                    // Start the job
-                    StartJob(nextJob, folder);
-                    
-                    // Continue loop to see if we can start jobs in OTHER folders with remaining cores
+                    // Not enough cores for this specific job right now.
+                    // Skip this folder, try next folder (maybe it has a smaller job).
+                    continue;
                 }
+
+                // Start the job
+                StartJob(nextJob, folder);
             }
 
             // After checking all folders:
@@ -206,9 +209,20 @@ public class JobManager : IDisposable
             if (!anyRunning)
             {
                 // ⚡ Bolt: Short-circuit checking for queued jobs if something is running, saving another O(N) pass.
-                // If nothing is running, and we have queued jobs, it might be that they don't fit in TotalCores?
-                // Or just that we finished everything.
-                var anyQueued = _folders.SelectMany(f => f.Jobs).Any(j => j.Status == JobStatus.Queued);
+                // Replace SelectMany allocation with nested loops.
+                bool anyQueued = false;
+                foreach (var f in _folders)
+                {
+                    foreach (var j in f.Jobs)
+                    {
+                        if (j.Status == JobStatus.Queued)
+                        {
+                            anyQueued = true;
+                            break;
+                        }
+                    }
+                    if (anyQueued) break;
+                }
 
                 if (!anyQueued)
                 {
