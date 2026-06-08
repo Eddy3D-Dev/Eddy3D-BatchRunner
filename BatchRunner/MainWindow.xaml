@@ -133,6 +133,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
+                                      AutomationProperties.Name="{Binding Name, StringFormat='Folder {0}'}"
                                       BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SurfaceBorderBrush}">
                                 <Expander.Header>
                                     <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}">
@@ -191,6 +192,8 @@
                                                         <TextBlock Style="{StaticResource DataGridCellTextStyle}">
                                                             <Hyperlink Command="{Binding DataContext.OpenLogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                        CommandParameter="{Binding LogPath}"
+                                                                       AutomationProperties.Name="{Binding LogPath, StringFormat='Open log file {0}'}"
+                                                                       ToolTip="Open log file"
                                                                        Foreground="{StaticResource AccentBrush}">
                                                                 <Run Text="{Binding LogFileName, Mode=OneWay}" />
                                                             </Hyperlink>
