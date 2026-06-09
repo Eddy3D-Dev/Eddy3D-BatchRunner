@@ -48,3 +48,7 @@
 ## 2026-03-16 - Unique Access Keys in Empty States
 **Learning:** When assigning access keys (mnemonics) in WPF views, keybindings must be unique across the entire window. Empty state views that duplicate persistent actions (like a main toolbar) should omit access keys on the temporary buttons to preserve the global hotkey mapping and prevent focus-cycling collisions.
 **Action:** Remove access keys from temporary or duplicate action buttons in empty state views.
+
+## 2026-03-24 - Screen Reader Support for Headers and Dynamic Links
+**Learning:** Screen readers often fail to announce context-rich information in complex WPF headers (like `Expander` or `DataGrid` headers) and dynamic links if `AutomationProperties.Name` is not explicitly set. Providing formatted strings gives crucial context.
+**Action:** Always add `AutomationProperties.Name` with `StringFormat` to provide detailed context to screen readers, especially on interactive but complex visual controls like Expanders and Hyperlinks.
