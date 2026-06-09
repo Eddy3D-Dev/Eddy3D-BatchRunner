@@ -162,7 +162,8 @@
                                               AlternationCount="2"
                                               BorderThickness="0"
                                               HeadersVisibility="Column"
-                                              Margin="20,0,0,8">
+                                              Margin="20,0,0,8"
+                                              AutomationProperties.Name="{Binding Name, StringFormat='Jobs in folder {0}'}">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90">
                                                 <DataGridTextColumn.ElementStyle>

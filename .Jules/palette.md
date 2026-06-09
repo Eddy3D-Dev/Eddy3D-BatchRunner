@@ -52,3 +52,14 @@
 ## 2026-03-24 - Screen Reader Support for Headers and Dynamic Links
 **Learning:** Screen readers often fail to announce context-rich information in complex WPF headers (like `Expander` or `DataGrid` headers) and dynamic links if `AutomationProperties.Name` is not explicitly set. Providing formatted strings gives crucial context.
 **Action:** Always add `AutomationProperties.Name` with `StringFormat` to provide detailed context to screen readers, especially on interactive but complex visual controls like Expanders and Hyperlinks.
+## 2026-03-24 - Screen Reader Support for Headers and Dynamic Links
+**Learning:** Screen readers often fail to announce context-rich information in complex WPF headers (like `Expander` or `DataGrid` headers) and dynamic links if `AutomationProperties.Name` is not explicitly set. Providing formatted strings gives crucial context.
+**Action:** Always add `AutomationProperties.Name` with `StringFormat` to provide detailed context to screen readers, especially on interactive but complex visual controls like Expanders and Hyperlinks.
+
+## 2026-03-25 - Row Hover States in DataGrids
+**Learning:** Users often lose their place when reading wide rows in a `DataGrid`. Adding a visual hover state significantly improves tracking and usability.
+**Action:** Always add an `IsMouseOver` trigger to `DataGridRow` styles to update the background color, matching the app's hover style.
+
+## 2026-03-25 - Color Contrast for Status Indicators
+**Learning:** Using overly bright colors (like `#EF6C00` for Orange) for text or small UI indicators fails WCAG AA contrast requirements against light backgrounds.
+**Action:** Always check color contrast ratios for status colors and use darker shades (e.g., `#D84315`) to ensure readability and compliance.

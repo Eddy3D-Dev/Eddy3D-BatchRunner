@@ -18,7 +18,7 @@ public class StatusToColorConverter : IValueConverter
                 JobStatus.Running => new SolidColorBrush(Color.FromRgb(0x00, 0x7A, 0xCC)), // Blue
                 JobStatus.Completed => new SolidColorBrush(Color.FromRgb(0x2E, 0x7D, 0x32)), // Green
                 JobStatus.Failed => new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28)), // Red
-                JobStatus.Cancelled => new SolidColorBrush(Color.FromRgb(0xEF, 0x6C, 0x00)), // Orange
+                JobStatus.Cancelled => new SolidColorBrush(Color.FromRgb(0xD8, 0x43, 0x15)), // Orange
                 _ => Brushes.Black
             };
         }
