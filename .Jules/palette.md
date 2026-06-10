@@ -63,3 +63,7 @@
 ## 2026-03-25 - Color Contrast for Status Indicators
 **Learning:** Using overly bright colors (like `#EF6C00` for Orange) for text or small UI indicators fails WCAG AA contrast requirements against light backgrounds.
 **Action:** Always check color contrast ratios for status colors and use darker shades (e.g., `#D84315`) to ensure readability and compliance.
+
+## 2026-06-10 - Visual Feedback for Drag and Drop
+**Learning:** Users often drag files over an application window without knowing if the application will accept them or where to drop them. Providing clear visual feedback (like a drop overlay) improves confidence and usability during drag-and-drop operations.
+**Action:** Always add a visual overlay (e.g., `DropOverlay`) that becomes visible during `DragEnter` and hidden on `DragLeave` and `Drop` to guide users dragging files or folders.
