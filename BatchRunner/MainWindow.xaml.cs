@@ -102,11 +102,25 @@ public partial class MainWindow : Window
         DragDrop.DoDragDrop(FoldersListItemsControl, data, DragDropEffects.Move);
     }
 
+    private void FoldersList_DragEnter(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            DropOverlay.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void FoldersList_DragLeave(object sender, DragEventArgs e)
+    {
+        DropOverlay.Visibility = Visibility.Collapsed;
+    }
+
     private void FoldersList_DragOver(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             e.Effects = DragDropEffects.Copy;
+            DropOverlay.Visibility = Visibility.Visible;
         }
         else if (e.Data.GetDataPresent(typeof(BatchFolder)))
         {
@@ -122,6 +136,8 @@ public partial class MainWindow : Window
 
     private void FoldersList_Drop(object sender, DragEventArgs e)
     {
+        DropOverlay.Visibility = Visibility.Collapsed;
+
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             var files = (string[])(e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>());

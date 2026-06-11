@@ -95,6 +95,8 @@
                 ClipToBounds="True"
                 AllowDrop="True"
                 Drop="FoldersList_Drop"
+                DragEnter="FoldersList_DragEnter"
+                DragLeave="FoldersList_DragLeave"
                 DragOver="FoldersList_DragOver">
             <Grid>
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -232,6 +234,22 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <!-- Drag & Drop Overlay -->
+                <Border x:Name="DropOverlay"
+                        Background="#E6F4F6F8"
+                        Visibility="Collapsed"
+                        IsHitTestVisible="False"
+                        CornerRadius="12">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16" />
+                        <TextBlock Text="Drop folders or .bat files here"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
     </Grid>
