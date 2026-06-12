@@ -148,7 +148,8 @@
                                         
                                         <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80"
                                                    Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" VerticalAlignment="Center" />
                                         
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
