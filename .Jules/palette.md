@@ -67,3 +67,7 @@
 ## 2026-06-10 - Visual Feedback for Drag and Drop
 **Learning:** Users often drag files over an application window without knowing if the application will accept them or where to drop them. Providing clear visual feedback (like a drop overlay) improves confidence and usability during drag-and-drop operations.
 **Action:** Always add a visual overlay (e.g., `DropOverlay`) that becomes visible during `DragEnter` and hidden on `DragLeave` and `Drop` to guide users dragging files or folders.
+
+## 2026-06-12 - Ensure context menu operations work on Selected Items
+**Learning:** In WPF, context menus and toolbar buttons often depend on a selection state managed in the ViewModel (like `SelectedJob` or `SelectedFolder`). If the UI control (e.g. `DataGrid` or `ListBox`) doesn't have a `SelectedItem` binding, these contextual actions will fail when invoked globally.
+**Action:** Always verify that `SelectedItem` property is bound `TwoWay` to the corresponding ViewModel property on lists or grids when there are global actions depending on selection.
