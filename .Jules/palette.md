@@ -71,3 +71,11 @@
 ## 2026-06-12 - Ensure context menu operations work on Selected Items
 **Learning:** In WPF, context menus and toolbar buttons often depend on a selection state managed in the ViewModel (like `SelectedJob` or `SelectedFolder`). If the UI control (e.g. `DataGrid` or `ListBox`) doesn't have a `SelectedItem` binding, these contextual actions will fail when invoked globally.
 **Action:** Always verify that `SelectedItem` property is bound `TwoWay` to the corresponding ViewModel property on lists or grids when there are global actions depending on selection.
+
+## 2026-04-10 - Fix WPF Expander Header Clickability
+**Learning:** By default, WPF `Expander` headers only register clicks on the exact text or elements within them, not the empty space. Using width bindings to stretch the header often causes layout issues or clipping with scrollbars.
+**Action:** To ensure the entire `Expander` header is clickable and layouts properly, set `HorizontalContentAlignment="Stretch"` on the `Expander` itself and apply `Background="Transparent"` and `Cursor="Hand"` to the internal `Grid` or container.
+
+## 2026-04-10 - External Link Indicators
+**Learning:** Users can be surprised when a button click unexpectedly opens a web browser instead of navigating within the app.
+**Action:** Always append a `↗` (or similar icon) to buttons or links that open external web pages to clearly indicate the action.

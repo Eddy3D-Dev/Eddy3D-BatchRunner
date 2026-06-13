@@ -81,7 +81,7 @@
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button Content="V_isualise Results" Margin="16,0,0,0" Click="VisualizeResults_Click"
+                <Button Content="V_isualise Results ↗" Margin="16,0,0,0" Click="VisualizeResults_Click"
                         ToolTip="Open the Eddy3D Visualizer in your browser" />
             </WrapPanel>
         </Border>
@@ -101,6 +101,7 @@
             <Grid>
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
                             Visibility="{Binding HasFolders, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <TextBlock Text="📂" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16" />
                     <TextBlock Text="No jobs queued"
                                FontSize="18" FontWeight="SemiBold"
                                Foreground="{StaticResource TextBrush}"
@@ -135,15 +136,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:BatchFolder}">
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
+                                      HorizontalContentAlignment="Stretch"
                                       AutomationProperties.Name="{Binding Name, StringFormat='Folder {0}'}"
                                       BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SurfaceBorderBrush}">
                                 <Expander.Header>
-                                    <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}">
+                                    <Grid Background="Transparent" Cursor="Hand">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" /> <!-- Status -->
                                             <ColumnDefinition Width="*" /> <!-- Name -->
                                             <ColumnDefinition Width="Auto" /> <!-- Actions -->
-                                            <ColumnDefinition Width="40" /> <!-- Spacer for scrollbar -->
                                         </Grid.ColumnDefinitions>
                                         
                                         <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80"
