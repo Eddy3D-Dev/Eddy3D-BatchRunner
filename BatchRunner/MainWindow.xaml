@@ -166,6 +166,7 @@
                                               BorderThickness="0"
                                               HeadersVisibility="Column"
                                               Margin="20,0,0,8"
+                                              SelectedItem="{Binding DataContext.SelectedJob, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
                                               AutomationProperties.Name="{Binding Name, StringFormat='Jobs in folder {0}'}">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90">
