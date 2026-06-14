@@ -79,3 +79,7 @@
 ## 2026-04-10 - External Link Indicators
 **Learning:** Users can be surprised when a button click unexpectedly opens a web browser instead of navigating within the app.
 **Action:** Always append a `↗` (or similar icon) to buttons or links that open external web pages to clearly indicate the action.
+
+## 2026-06-15 - Surface Keyboard Shortcuts in Tooltips
+**Learning:** WPF mnemonic access keys (e.g., `_File`) allow users to trigger actions using `Alt + [Key]`, but these shortcuts are completely invisible until the user presses `Alt`. This hidden nature significantly reduces the discoverability of keyboard navigation for power users and those relying on assistive technologies.
+**Action:** Always surface invisible mnemonic access keys by explicitly appending their keyboard shortcut hint (e.g., `(Alt+F)`) to the element's `ToolTip`. This creates a more intuitive and discoverable keyboard-accessible interface.
