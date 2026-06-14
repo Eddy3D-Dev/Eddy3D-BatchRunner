@@ -34,34 +34,34 @@
                 Margin="0,0,0,12">
             <WrapPanel VerticalAlignment="Center" ItemHeight="40">
                 <Button Content="Add _Folder..." Margin="0,0,8,0" Click="AddFolder_Click"
-                        ToolTip="Import a folder containing batch files to the queue" />
+                        ToolTip="Import a folder containing batch files to the queue (Alt+F)" />
                 <Button Content="Add *._bat" Margin="0,0,16,0" Click="AddJobs_Click"
-                        ToolTip="Import individual .bat files to the queue" />
+                        ToolTip="Import individual .bat files to the queue (Alt+B)" />
                 
                 <Button Content="_Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
-                        ToolTip="Expand all folder groups in the list" />
+                        ToolTip="Expand all folder groups in the list (Alt+E)" />
                 <Button Content="Colla_pse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
-                        ToolTip="Collapse all folder groups in the list" />
+                        ToolTip="Collapse all folder groups in the list (Alt+P)" />
                 <Button Content="Remo_ve All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
-                        ToolTip="Clear the entire queue" />
+                        ToolTip="Clear the entire queue (Alt+V)" />
                 
                 <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
-                        ToolTip="Begin processing the queued jobs" />
+                        ToolTip="Begin processing the queued jobs (Alt+S)" />
                 
                 <Button Content="Ca_ncel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
-                        ToolTip="Stop the currently selected job" />
+                        ToolTip="Stop the currently selected job (Alt+N)" />
                 <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
-                        ToolTip="Restart the selected job (or all jobs in the selected folder)" Click="Button_Click" />
+                        ToolTip="Restart the selected job (or all jobs in the selected folder) (Alt+R)" Click="Button_Click" />
                 
                 <CheckBox Content="_Auto-retry failed jobs (1x)" Margin="0,0,12,0"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}"
-                          ToolTip="Automatically retry a failed job once before marking it as failed" />
+                          ToolTip="Automatically retry a failed job once before marking it as failed (Alt+A)" />
                 <CheckBox Content="Show _job window" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.ShowConsoleWindow}"
-                          ToolTip="Show the console window for running jobs" />
+                          ToolTip="Show the console window for running jobs (Alt+J)" />
                 <CheckBox Content="Compress &amp; _Delete completed" Margin="0,0,16,0"
                           IsChecked="{Binding Settings.CompressCompletedCases}"
-                          ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space." />
+                          ToolTip="Compresses the completed case folder into a .zip file and deletes the original folder to save space (Alt+D)" />
                 <Border Background="{StaticResource HeaderBackgroundBrush}"
                         BorderBrush="{StaticResource SurfaceBorderBrush}"
                         BorderThickness="1"
@@ -75,14 +75,14 @@
                         <TextBox x:Name="CoresTextBox" Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                  VerticalAlignment="Center" Width="40" TextAlignment="Center"
                                  AutomationProperties.Name="Total CPU Cores"
-                                 ToolTip="Maximum number of CPU cores to use for all concurrent jobs" />
+                                 ToolTip="Maximum number of CPU cores to use for all concurrent jobs (Alt+O)" />
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
                 <Button Content="V_isualise Results ↗" Margin="16,0,0,0" Click="VisualizeResults_Click"
-                        ToolTip="Open the Eddy3D Visualizer in your browser" />
+                        ToolTip="Open the Eddy3D Visualizer in your browser (Alt+I)" />
             </WrapPanel>
         </Border>
 
