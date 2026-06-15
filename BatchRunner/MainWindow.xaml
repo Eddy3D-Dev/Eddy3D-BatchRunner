@@ -112,14 +112,14 @@
                                 Padding="24,10"
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                ToolTip="Import folders containing batch files to the queue"
+                                ToolTip="Import folders containing batch files to the queue (Alt+F)"
                                 Margin="0,0,8,0" />
                         <Button Content="Add *.bat Files"
                                 Click="AddJobs_Click"
                                 Padding="24,10"
                                 FontSize="14"
                                 FontWeight="SemiBold"
-                                ToolTip="Import individual .bat files to the queue" />
+                                ToolTip="Import individual .bat files to the queue (Alt+B)" />
                     </StackPanel>
                     <TextBlock Text="Or drag and drop folders or .bat files here"
                                FontSize="14"
