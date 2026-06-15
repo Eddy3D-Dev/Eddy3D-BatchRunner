@@ -12,7 +12,7 @@
         <Color x:Key="AppBackgroundColor">#F4F6F8</Color>
         <Color x:Key="SurfaceColor">#FFFFFF</Color>
         <Color x:Key="SurfaceBorderColor">#D9DEE3</Color>
-        <Color x:Key="AccentColor">#2E9C95</Color>
+        <Color x:Key="AccentColor">#227A75</Color>
         <Color x:Key="TextColor">#1F1F1F</Color>
         <Color x:Key="MutedTextColor">#5A5A5A</Color>
         <Color x:Key="HeaderBackgroundColor">#EEF1F4</Color>
