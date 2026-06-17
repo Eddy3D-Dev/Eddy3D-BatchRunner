@@ -850,6 +850,21 @@ public class MainViewModel : ObservableObject
              return;
         }
 
+        bool hasRunningJobs = folder.Jobs.Any(j => j.Status == JobStatus.Running);
+        if (hasRunningJobs)
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"Folder '{folder.Name}' has currently running jobs. Removing it will cancel them. Are you sure?",
+                "Confirm Remove Folder",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
         // Cancel running jobs in this folder
         foreach(var job in folder.Jobs)
         {
@@ -951,8 +966,13 @@ public class MainViewModel : ObservableObject
 
     private void RemoveAll(object? parameter)
     {
-        var result = MessageBox.Show("Are you sure you want to remove all folders? This will cancel all running jobs.", "Confirm Remove All", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (result != MessageBoxResult.Yes)
+        bool hasRunningJobs = Folders.Any(f => f.Jobs.Any(j => j.Status == JobStatus.Running));
+        string warningText = hasRunningJobs
+            ? "Are you sure you want to remove all folders? This will cancel all running jobs."
+            : "Are you sure you want to remove all folders?";
+
+        var result = System.Windows.MessageBox.Show(warningText, "Confirm Remove All", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+        if (result != System.Windows.MessageBoxResult.Yes)
         {
             return;
         }
