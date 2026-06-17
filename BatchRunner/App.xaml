@@ -127,6 +127,14 @@
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Margin" Value="{StaticResource GridColumnTextMargin}" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
+                </Trigger>
+                <Trigger Property="Text" Value="{x:Null}">
+                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type DataGridRow}">
