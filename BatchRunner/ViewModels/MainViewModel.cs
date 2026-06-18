@@ -898,6 +898,20 @@ public class MainViewModel : ObservableObject
             return;
         }
 
+        if (job.Status == JobStatus.Running)
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"Job '{job.Name}' is currently running. Are you sure you want to cancel it?",
+                "Confirm Cancel Job",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
         _jobManager.CancelJob(job);
     }
 
@@ -916,6 +930,22 @@ public class MainViewModel : ObservableObject
              // Restart folder?
              // Logic for folder restart: reset all jobs in folder.
              var folder = SelectedFolder;
+
+             bool hasRunningJobs = folder.Jobs.Any(j => j.Status == JobStatus.Running);
+             if (hasRunningJobs)
+             {
+                 var result = System.Windows.MessageBox.Show(
+                     $"Folder '{folder.Name}' has currently running jobs. Restarting it will cancel them. Are you sure?",
+                     "Confirm Restart Folder",
+                     System.Windows.MessageBoxButton.YesNo,
+                     System.Windows.MessageBoxImage.Warning);
+
+                 if (result != System.Windows.MessageBoxResult.Yes)
+                 {
+                     return;
+                 }
+             }
+
              foreach(var j in folder.Jobs)
              {
                  _jobManager.RestartJob(j); 
@@ -926,6 +956,20 @@ public class MainViewModel : ObservableObject
         if (job is null)
         {
             return;
+        }
+
+        if (job.Status == JobStatus.Running)
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"Job '{job.Name}' is currently running. Are you sure you want to restart it?",
+                "Confirm Restart Job",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
         }
 
         _jobManager.RestartJob(job);
