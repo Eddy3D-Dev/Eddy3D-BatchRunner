@@ -83,3 +83,7 @@
 ## 2026-06-15 - Surface Keyboard Shortcuts in Tooltips
 **Learning:** WPF mnemonic access keys (e.g., `_File`) allow users to trigger actions using `Alt + [Key]`, but these shortcuts are completely invisible until the user presses `Alt`. This hidden nature significantly reduces the discoverability of keyboard navigation for power users and those relying on assistive technologies.
 **Action:** Always surface invisible mnemonic access keys by explicitly appending their keyboard shortcut hint (e.g., `(Alt+F)`) to the element's `ToolTip`. This creates a more intuitive and discoverable keyboard-accessible interface.
+
+## 2026-07-20 - Contextual Tooltips for Disabled Controls
+**Learning:** When toolbar action buttons (like "Cancel" or "Restart") are disabled because they require a selection or specific state, users are often left guessing why the action is unavailable. This is especially frustrating if the tooltip only describes what the button *would* do if it were enabled.
+**Action:** Use dynamic tooltips (e.g., via `<Style.Triggers>` in WPF) on context-dependent buttons. When `IsEnabled="False"`, change the tooltip to explicitly explain what state is required to enable the button (e.g., "Select an active job to cancel it"). Pair this with `ToolTipService.ShowOnDisabled="True"` to ensure the tooltip is visible.
