@@ -51,7 +51,7 @@
                 <Button Content="Ca_ncel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
                         ToolTip="Stop the currently selected job (Alt+N)" />
                 <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
-                        ToolTip="Restart the selected job (or all jobs in the selected folder) (Alt+R)" Click="Button_Click" />
+                        ToolTip="Restart the selected job (or all jobs in the selected folder) (Alt+R)" />
                 
                 <CheckBox Content="_Auto-retry failed jobs (1x)" Margin="0,0,12,0"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}"
@@ -138,6 +138,7 @@
                             <Expander IsExpanded="{Binding IsExpanded}" Margin="0,0,0,4"
                                       HorizontalContentAlignment="Stretch"
                                       AutomationProperties.Name="{Binding Name, StringFormat='Folder {0}'}"
+                                      AutomationProperties.ItemStatus="{Binding Status}"
                                       BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SurfaceBorderBrush}">
                                 <Expander.Header>
                                     <Grid Background="Transparent" Cursor="Hand">
@@ -241,6 +242,8 @@
                 <!-- Drag & Drop Overlay -->
                 <Border x:Name="DropOverlay"
                         Background="#E6F4F6F8"
+                        BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="3"
                         Visibility="Collapsed"
                         IsHitTestVisible="False"
                         CornerRadius="12">
