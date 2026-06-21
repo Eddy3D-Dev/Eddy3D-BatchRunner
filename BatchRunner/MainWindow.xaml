@@ -48,10 +48,30 @@
                 <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
                         ToolTip="Begin processing the queued jobs (Alt+S)" />
                 
-                <Button Content="Ca_ncel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}"
-                        ToolTip="Stop the currently selected job (Alt+N)" />
-                <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}"
-                        ToolTip="Restart the selected job (or all jobs in the selected folder) (Alt+R)" />
+                <Button Content="Ca_ncel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Stop the currently selected job (Alt+N)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Select an active job to cancel it (Alt+N)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="_Restart Job" Margin="0,0,12,0" Command="{Binding RestartJobCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Restart the selected job (or all jobs in the selected folder) (Alt+R)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Select a job or folder to restart it (Alt+R)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 
                 <CheckBox Content="_Auto-retry failed jobs (1x)" Margin="0,0,12,0"
                           IsChecked="{Binding Settings.AutoRetryFailedJobs}"
