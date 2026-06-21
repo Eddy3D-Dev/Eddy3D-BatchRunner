@@ -87,3 +87,6 @@
 ## 2026-07-20 - Contextual Tooltips for Disabled Controls
 **Learning:** When toolbar action buttons (like "Cancel" or "Restart") are disabled because they require a selection or specific state, users are often left guessing why the action is unavailable. This is especially frustrating if the tooltip only describes what the button *would* do if it were enabled.
 **Action:** Use dynamic tooltips (e.g., via `<Style.Triggers>` in WPF) on context-dependent buttons. When `IsEnabled="False"`, change the tooltip to explicitly explain what state is required to enable the button (e.g., "Select an active job to cancel it"). Pair this with `ToolTipService.ShowOnDisabled="True"` to ensure the tooltip is visible.
+## 2024-05-18 - Context-aware Disabled Tooltips in WPF
+**Learning:** WPF makes it easy to add dynamic, context-aware explanations for why a button is disabled without needing complex ViewModel logic. Setting `ToolTipService.ShowOnDisabled="True"` and using a `<Style.Triggers>` block checking `IsEnabled` is a clean, semantic pattern.
+**Action:** Use this pattern across WPF views to prevent users from wondering "why can't I click this?" when features are grayed out.

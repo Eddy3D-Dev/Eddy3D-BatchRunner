@@ -38,15 +38,55 @@
                 <Button Content="Add *._bat" Margin="0,0,16,0" Click="AddJobs_Click"
                         ToolTip="Import individual .bat files to the queue (Alt+B)" />
                 
-                <Button Content="_Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}"
-                        ToolTip="Expand all folder groups in the list (Alt+E)" />
-                <Button Content="Colla_pse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}"
-                        ToolTip="Collapse all folder groups in the list (Alt+P)" />
-                <Button Content="Remo_ve All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}"
-                        ToolTip="Clear the entire queue (Alt+V)" />
+                <Button Content="_Expand All" Margin="0,0,8,0" Command="{Binding ExpandAllCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Expand all folder groups in the list (Alt+E)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Add folders to the queue to enable this action (Alt+E)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Colla_pse All" Margin="0,0,8,0" Command="{Binding CollapseAllCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Collapse all folder groups in the list (Alt+P)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Add folders to the queue to enable this action (Alt+P)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Remo_ve All" Margin="0,0,16,0" Command="{Binding RemoveAllCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Clear the entire queue (Alt+V)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Add jobs to the queue to enable this action (Alt+V)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 
-                <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}"
-                        ToolTip="Begin processing the queued jobs (Alt+S)" />
+                <Button Content="_Start queue" Margin="0,0,8,0" Command="{Binding StartQueueCommand}" ToolTipService.ShowOnDisabled="True">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Begin processing the queued jobs (Alt+S)" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="ToolTip" Value="Add uncompleted jobs to the queue to start processing (Alt+S)" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 
                 <Button Content="Ca_ncel Job" Margin="0,0,8,0" Command="{Binding CancelJobCommand}" ToolTipService.ShowOnDisabled="True">
                     <Button.Style>
