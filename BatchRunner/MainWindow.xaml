@@ -278,14 +278,36 @@
                                                                     Command="{Binding DataContext.CancelJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding}"
                                                                     AutomationProperties.Name="{Binding Name, StringFormat='Cancel job {0}'}"
-                                                                    ToolTip="Stop this job" />
+                                                                    ToolTipService.ShowOnDisabled="True">
+                                                                <Button.Style>
+                                                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                                        <Setter Property="ToolTip" Value="Stop this job" />
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                                <Setter Property="ToolTip" Value="Job must be queued or running to be cancelled" />
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Button.Style>
+                                                            </Button>
                                                             <Button Content="Restart" Margin="4,4"
                                                                     Padding="12,2"
                                                                     MinWidth="72"
                                                                     Command="{Binding DataContext.RestartJobCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                     CommandParameter="{Binding}"
                                                                     AutomationProperties.Name="{Binding Name, StringFormat='Restart job {0}'}"
-                                                                    ToolTip="Restart this job" />
+                                                                    ToolTipService.ShowOnDisabled="True">
+                                                                <Button.Style>
+                                                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                                        <Setter Property="ToolTip" Value="Restart this job" />
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                                <Setter Property="ToolTip" Value="Job must be completed, cancelled, or failed to be restarted" />
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Button.Style>
+                                                            </Button>
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
