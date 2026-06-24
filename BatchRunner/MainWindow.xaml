@@ -142,6 +142,7 @@
                     </StackPanel>
                 </Border>
                 <Button Content="V_isualise Results ↗" Margin="16,0,0,0" Click="VisualizeResults_Click"
+                        AutomationProperties.Name="Visualise Results"
                         ToolTip="Open the Eddy3D Visualizer in your browser (Alt+I)" />
             </WrapPanel>
         </Border>
@@ -260,8 +261,7 @@
                                                             <Hyperlink Command="{Binding DataContext.OpenLogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                        CommandParameter="{Binding LogPath}"
                                                                        AutomationProperties.Name="{Binding LogPath, StringFormat='Open log file {0}'}"
-                                                                       ToolTip="Open log file"
-                                                                       Foreground="{StaticResource AccentBrush}">
+                                                                       ToolTip="{Binding LogPath, StringFormat='Open log file: {0}'}">
                                                                 <Run Text="{Binding LogFileName, Mode=OneWay}" />
                                                             </Hyperlink>
                                                         </TextBlock>
