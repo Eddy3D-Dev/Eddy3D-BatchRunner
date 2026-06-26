@@ -93,3 +93,7 @@
 ## 2026-06-25 - Empty State Button Styling
 **Learning:** The empty state CTA buttons had plain text. Wrapping them in a StackPanel with emoji icons improves discoverability. We must set AutomationProperties.Name directly on the Button when moving structural text so screen readers read the action name cleanly rather than reading the emoji or becoming confused by the layout container.
 **Action:** Always verify accessible names on WPF elements when using composite control structures like StackPanels inside Buttons.
+
+## 2026-06-26 - Account for Padding and Font Weight in Fixed Column Widths
+**Learning:** In WPF `DataGrid` definitions, when applying padding/margins (e.g., `GridColumnTextMargin` which has an 8px margin on each side) and font variations like `FontWeight="SemiBold"`, the actual render space required for text (such as column headers or cell values) increases significantly. Simply setting fixed widths based on standard text size often leads to unexpected text truncation (e.g., "Completed" becomes "Comple...").
+**Action:** When setting fixed `Width` properties for `DataGrid` columns, proactively account for applied inner margins, padding, and font weight by adding extra buffer space to prevent visual clipping.
