@@ -90,3 +90,6 @@
 ## 2024-05-18 - Context-aware Disabled Tooltips in WPF
 **Learning:** WPF makes it easy to add dynamic, context-aware explanations for why a button is disabled without needing complex ViewModel logic. Setting `ToolTipService.ShowOnDisabled="True"` and using a `<Style.Triggers>` block checking `IsEnabled` is a clean, semantic pattern.
 **Action:** Use this pattern across WPF views to prevent users from wondering "why can't I click this?" when features are grayed out.
+## 2026-06-25 - Empty State Button Styling
+**Learning:** The empty state CTA buttons had plain text. Wrapping them in a StackPanel with emoji icons improves discoverability. We must set AutomationProperties.Name directly on the Button when moving structural text so screen readers read the action name cleanly rather than reading the emoji or becoming confused by the layout container.
+**Action:** Always verify accessible names on WPF elements when using composite control structures like StackPanels inside Buttons.

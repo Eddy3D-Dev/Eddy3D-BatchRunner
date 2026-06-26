@@ -168,19 +168,25 @@
                                Foreground="{StaticResource TextBrush}"
                                HorizontalAlignment="Center" Margin="0,0,0,16" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                        <Button Content="Add Folders..."
-                                Click="AddFolder_Click"
+                        <Button Click="AddFolder_Click"
                                 Padding="24,10"
-                                FontSize="14"
-                                FontWeight="SemiBold"
                                 ToolTip="Import folders containing batch files to the queue (Alt+F)"
-                                Margin="0,0,8,0" />
-                        <Button Content="Add *.bat Files"
-                                Click="AddJobs_Click"
+                                Margin="0,0,8,0"
+                                AutomationProperties.Name="Add Folders...">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📁" FontSize="16" Margin="0,0,8,0" />
+                                <TextBlock Text="Add Folders..." FontSize="14" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Button>
+                        <Button Click="AddJobs_Click"
                                 Padding="24,10"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                ToolTip="Import individual .bat files to the queue (Alt+B)" />
+                                ToolTip="Import individual .bat files to the queue (Alt+B)"
+                                AutomationProperties.Name="Add *.bat Files">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📄" FontSize="16" Margin="0,0,8,0" />
+                                <TextBlock Text="Add *.bat Files" FontSize="14" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                     <TextBlock Text="Or drag and drop folders or .bat files here"
                                FontSize="14"
