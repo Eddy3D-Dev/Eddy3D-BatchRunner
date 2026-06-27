@@ -265,10 +265,23 @@
                                                     <DataTemplate>
                                                         <TextBlock Style="{StaticResource DataGridCellTextStyle}">
                                                             <Hyperlink Command="{Binding DataContext.OpenLogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                       CommandParameter="{Binding LogPath}"
-                                                                       AutomationProperties.Name="{Binding LogPath, StringFormat='Open log file {0}'}"
-                                                                       ToolTip="{Binding LogPath, StringFormat='Open log file: {0}'}">
-                                                                <Run Text="{Binding LogFileName, Mode=OneWay}" />
+                                                                       CommandParameter="{Binding LogPath}">
+                                                                <Hyperlink.Style>
+                                                                    <Style TargetType="Hyperlink" BasedOn="{StaticResource {x:Type Hyperlink}}">
+                                                                        <Setter Property="AutomationProperties.Name" Value="{Binding LogPath, StringFormat='Open log file {0}'}" />
+                                                                        <Setter Property="ToolTip" Value="{Binding LogPath, StringFormat='Open log file: {0}'}" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding LogPath}" Value="{x:Null}">
+                                                                                <Setter Property="IsEnabled" Value="False" />
+                                                                                <Setter Property="ToolTip" Value="{x:Null}" />
+                                                                                <Setter Property="AutomationProperties.Name" Value="No log file available" />
+                                                                                <Setter Property="TextDecorations" Value="None" />
+                                                                                <Setter Property="Foreground" Value="#5A5A5A" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Hyperlink.Style>
+                                                                <Run Text="{Binding LogFileName, Mode=OneWay, TargetNullValue='-'}" />
                                                             </Hyperlink>
                                                         </TextBlock>
                                                     </DataTemplate>
