@@ -250,13 +250,13 @@
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Cores" Binding="{Binding RequiredCores}" Width="75"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}, TargetNullValue='-'}" Width="150"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Ended" Binding="{Binding EndedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="150"
+                                            <DataGridTextColumn Header="Ended" Binding="{Binding EndedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}, TargetNullValue='-'}" Width="150"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat={}{0:hh\\:mm\\:ss}}" Width="90"
+                                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat={}{0:hh\\:mm\\:ss}, TargetNullValue='-'}" Width="90"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
-                                            <DataGridTextColumn Header="Exit" Binding="{Binding ExitCode}" Width="60"
+                                            <DataGridTextColumn Header="Exit" Binding="{Binding ExitCode, TargetNullValue='-'}" Width="60"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />
                                             <DataGridTextColumn Header="Retries" Binding="{Binding RetryCount}" Width="90"
                                                                 ElementStyle="{StaticResource DataGridCellTextStyle}" />

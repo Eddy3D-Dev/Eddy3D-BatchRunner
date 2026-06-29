@@ -143,6 +143,9 @@
                 <Trigger Property="Text" Value="{x:Null}">
                     <Setter Property="ToolTipService.IsEnabled" Value="False" />
                 </Trigger>
+                <Trigger Property="Text" Value="-">
+                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
+                </Trigger>
             </Style.Triggers>
         </Style>
 
