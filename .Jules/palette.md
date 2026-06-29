@@ -104,3 +104,7 @@
 ## 2024-05-24 - Focus Visible Styles for Custom Button Templates
 **Learning:** When using custom `ControlTemplate`s for WPF Controls like `Button`, the default dashed focus rectangle often looks misaligned or disappears entirely against custom backgrounds. Relying solely on `IsKeyboardFocused` to change the border color can be too subtle and fails WCAG non-text contrast requirements if the border color change isn't distinct enough from the background or the previous border.
 **Action:** Always add an explicit, high-contrast `FocusRing` (e.g., a 2px `Border` slightly offset or with a contrasting color) inside the custom `ControlTemplate` and set `FocusVisualStyle="{x:Null}"` on the control to disable the default Windows dashed outline. Toggle the `FocusRing`'s visibility using a trigger on `IsKeyboardFocused="True"`.
+
+## 2026-06-29 - Empty states for nullable text in DataGrids
+**Learning:** When a DataGrid column is bound to a nullable property (like dates or duration), it displays a blank cell if empty. Adding a placeholder value improves readability, but setting `TargetNullValue='-'` causes unhelpful tooltips (e.g., just displaying "-") to appear if the cell's ToolTip is bound to its Text.
+**Action:** Set `TargetNullValue='-'` on nullable text column bindings to show a neat placeholder instead of a blank cell, and pair it with a Style Trigger on `Text="-"` to set `ToolTipService.IsEnabled="False"`, suppressing the unhelpful placeholder tooltip.
