@@ -214,19 +214,16 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        string message = _viewModel.AnyJobsRunning
-            ? "There are jobs still running. Are you sure you want to stop them and exit?"
-            : "Are you sure you want to exit BatchRunner?";
+        if (_viewModel.AnyJobsRunning)
+        {
+            var result = MessageBox.Show(this, "There are jobs still running. Are you sure you want to stop them and exit?", "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes)
+            {
+                e.Cancel = true;
+                return;
+            }
+        }
 
-        var result = MessageBox.Show(this, message, "Confirm Exit", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        
-        if (result != MessageBoxResult.Yes)
-        {
-            e.Cancel = true;
-        }
-        else
-        {
-            _viewModel.FlushState();
-        }
+        _viewModel.FlushState();
     }
 }

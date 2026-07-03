@@ -108,3 +108,10 @@
 ## 2026-06-29 - Empty states for nullable text in DataGrids
 **Learning:** When a DataGrid column is bound to a nullable property (like dates or duration), it displays a blank cell if empty. Adding a placeholder value improves readability, but setting `TargetNullValue='-'` causes unhelpful tooltips (e.g., just displaying "-") to appear if the cell's ToolTip is bound to its Text.
 **Action:** Set `TargetNullValue='-'` on nullable text column bindings to show a neat placeholder instead of a blank cell, and pair it with a Style Trigger on `Text="-"` to set `ToolTipService.IsEnabled="False"`, suppressing the unhelpful placeholder tooltip.
+## 2026-07-03 - Clean Screen Reader Names for File Extensions
+**Learning:** When WPF UI elements contain code syntax, symbols, or wildcards (e.g., `*._bat`), screen readers announce them awkwardly (e.g., 'star dot bat').
+**Action:** Explicitly set `AutomationProperties.Name` to plain, descriptive text (e.g., 'Add batch files') so screen readers announce the action cleanly.
+
+## 2026-07-03 - Conditional Exit Confirmations
+**Learning:** Prompting users with 'Are you sure you want to exit?' every time they close the app causes click fatigue, especially when state is auto-saved.
+**Action:** Only show an exit confirmation warning if there are active background tasks or a real risk of data loss. If idle, exit silently.
