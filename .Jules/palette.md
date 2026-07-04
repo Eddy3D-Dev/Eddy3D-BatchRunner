@@ -115,3 +115,7 @@
 ## 2026-07-03 - Conditional Exit Confirmations
 **Learning:** Prompting users with 'Are you sure you want to exit?' every time they close the app causes click fatigue, especially when state is auto-saved.
 **Action:** Only show an exit confirmation warning if there are active background tasks or a real risk of data loss. If idle, exit silently.
+
+## 2026-07-04 - Keyboard Focus Visibility in WPF Rows
+**Learning:** When users navigate a `DataGrid` using the keyboard (e.g., tabbing through interactive elements like buttons within cells), the row lacks visual tracking feedback by default, unlike when hovering with a mouse. Adding an `IsKeyboardFocusWithin` trigger mirroring the `IsMouseOver` state provides essential context for keyboard users.
+**Action:** Always add an `IsKeyboardFocusWithin` trigger alongside `IsMouseOver` to `DataGridRow` styles to ensure consistent row-tracking feedback for keyboard users.
