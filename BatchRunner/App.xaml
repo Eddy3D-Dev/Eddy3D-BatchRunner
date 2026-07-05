@@ -157,6 +157,9 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
                 </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
+                </Trigger>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="#D9ECFF" />
                     <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
@@ -181,6 +184,9 @@
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#154D4A" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True">
                     <Setter Property="Foreground" Value="#154D4A" />
                 </Trigger>
             </Style.Triggers>
