@@ -119,3 +119,7 @@
 ## 2026-07-04 - Keyboard Focus Visibility in WPF Rows
 **Learning:** When users navigate a `DataGrid` using the keyboard (e.g., tabbing through interactive elements like buttons within cells), the row lacks visual tracking feedback by default, unlike when hovering with a mouse. Adding an `IsKeyboardFocusWithin` trigger mirroring the `IsMouseOver` state provides essential context for keyboard users.
 **Action:** Always add an `IsKeyboardFocusWithin` trigger alongside `IsMouseOver` to `DataGridRow` styles to ensure consistent row-tracking feedback for keyboard users.
+
+## 2026-10-27 - Contextual Item Counts on Collapsible Headers
+**Learning:** Users lack context about the contents of a collapsed list header (like an `Expander`), requiring them to manually expand it to see how many items are inside. This adds unnecessary clicks and friction.
+**Action:** When designing collapsible headers that group items (like folders containing jobs), always append a contextual count of the items (e.g., `(6)`) using a muted text brush. This provides immediate value while maintaining visual hierarchy.
