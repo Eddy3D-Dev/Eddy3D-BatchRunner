@@ -12,6 +12,7 @@
         Width="1728"
         MinHeight="520"
         MinWidth="900"
+        WindowStartupLocation="CenterScreen"
         Background="{StaticResource AppBackgroundBrush}"
         Closing="Window_Closing">
     <Window.TaskbarItemInfo>
@@ -218,8 +219,11 @@
                                         
                                         <TextBlock Grid.Column="0" Text="{Binding Status}" FontWeight="Bold" Margin="0,0,10,0" Width="80"
                                                    Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" VerticalAlignment="Center">
+                                            <Run Text="{Binding Name, Mode=OneWay}" />
+                                            <Run Text="{Binding Jobs.Count, Mode=OneWay, StringFormat=' ({0})'}" Foreground="{StaticResource MutedTextBrush}" />
+                                        </TextBlock>
                                         
                                         <Button Grid.Column="2" Content="Remove" Padding="8,2" Margin="0,0,10,0"
                                                 Command="{Binding DataContext.RemoveFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
