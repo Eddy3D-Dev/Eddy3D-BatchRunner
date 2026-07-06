@@ -123,3 +123,7 @@
 ## 2026-10-27 - Contextual Item Counts on Collapsible Headers
 **Learning:** Users lack context about the contents of a collapsed list header (like an `Expander`), requiring them to manually expand it to see how many items are inside. This adds unnecessary clicks and friction.
 **Action:** When designing collapsible headers that group items (like folders containing jobs), always append a contextual count of the items (e.g., `(6)`) using a muted text brush. This provides immediate value while maintaining visual hierarchy.
+
+## 2026-07-06 - Inline Validation Feedback for Text Inputs
+**Learning:** Default WPF validation (a thin red border) lacks sufficient visual emphasis and fails to explain *why* the input is invalid to the user, particularly for accessibility and immediate feedback.
+**Action:** Always add a `Validation.HasError` trigger to inputs, updating the `Background` to a clearly discernible error color (e.g., `#FFEBEE`) and binding the `ToolTip` to the actual validation error content.
