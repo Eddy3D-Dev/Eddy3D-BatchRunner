@@ -136,8 +136,19 @@
                         <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0" />
                         <TextBox x:Name="CoresTextBox" Text="{Binding TotalCores, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                  VerticalAlignment="Center" Width="40" TextAlignment="Center"
-                                 AutomationProperties.Name="Total CPU Cores"
-                                 ToolTip="Maximum number of CPU cores to use for all concurrent jobs (Alt+O)" />
+                                 AutomationProperties.Name="Total CPU Cores">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                    <Setter Property="ToolTip" Value="Maximum number of CPU cores to use for all concurrent jobs (Alt+O)" />
+                                    <Style.Triggers>
+                                        <Trigger Property="Validation.HasError" Value="True">
+                                            <Setter Property="ToolTip" Value="{Binding (Validation.Errors)[0].ErrorContent, RelativeSource={RelativeSource Self}}" />
+                                            <Setter Property="Background" Value="#FFEBEE" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
                         <TextBlock Text="(free: " VerticalAlignment="Center" Margin="6,0,0,0" />
                         <TextBlock Text="{Binding AvailableCores}" VerticalAlignment="Center" />
                         <TextBlock Text=")" VerticalAlignment="Center" />
